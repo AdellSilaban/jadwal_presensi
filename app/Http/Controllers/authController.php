@@ -10,52 +10,62 @@ use App\User;
 class authController extends Controller
 {
     public function register(){
-            return view('register'); 
+        $divisi=divisi::all();
+            return view('register', compact('divisi')); 
         }
     
-        public function simpanRegis(Request $request){
-            User::create([
-                'nama'=> $request->nama,
-                'jabatan'=> $request->jabatan,
-                'email'=> $request->email,
-                'password'=> bcrypt($request->password)
+        public function simpanRegis(Request $request)
+        {
+            // Validasi dasar
+            $request->validate([
+                'nama' => 'required',
+                'jabatan' => 'required',
+                'email' => 'required|email|unique:users',
+                'password' => 'required|min:6',
+                // divisi_id hanya wajib jika bukan Kepala LPKKSK
+                'divisi_id' => $request->jabatan !== 'Kepala LPKKSK' 
+                    ? 'required|exists:divisi,divisi_id' 
+                    : 'nullable',
             ]);
-            return redirect('login')->with('flash', 'YEY BERHASIL')->with('flash_type', 'success');
-        }    
+        
+            // Simpan user
+            User::create([
+                'divisi_id' => $request->jabatan === 'Kepala LPKKSK' ? null : $request->divisi_id,
+                'nama' => $request->nama,
+                'jabatan' => $request->jabatan,
+                'email' => $request->email,
+                'password' => bcrypt($request->password),
+            ]);
+        
+            return redirect('/login')
+                ->with('flash', 'YEY BERHASIL')
+                ->with('flash_type', 'success');
+        }
+         
 
     public function login(){
         return view('login');
      }
 
-     public function ceklogin(Request $request){
+
+     public function ceklogin(Request $request) {
         $datalogin = [
-            'email' => $request -> email,
-            'password' => $request -> password,
+            'email' => $request->email,
+            'password' => $request->password,
         ];
-        if(Auth::attempt($datalogin)){ 
-            //hak akses
-            if(Auth::user()->jabatan == 'Kepala LPKKSK'){
+        if (Auth::attempt($datalogin)) {
+            if (Auth::user()->jabatan == 'Kepala LPKKSK') {
                 return redirect('/home_kepalaPKK');
-            } 
-            elseif(Auth::user()->jabatan =='Koordinator Divisi PKK Live'){
-                return redirect('/home_koorLive');
-            }
-            elseif(Auth::user()->jabatan =='Koordinator Divisi Tim Ibadah Kampus'){
-                return redirect('/home_koorTik');
-            }
-            elseif(Auth::user()->jabatan == 'Koordinator Divisi Konseling'){
-                return redirect('/home_koorkonsul');
-            }
-            elseif(Auth::user()->jabatan =='Koodinator Divisi Creative'){
-                return redirect('/home_koorcrv');
-            }
-        }
-        else{
-            return redirect('/login')->withErrors('Email atau Password tidak sesuai!')->withInput();
+
+            } elseif (Auth::user()->jabatan == 'Koordinator Divisi PKK Live' ||
+                      Auth::user()->jabatan == 'Koordinator Divisi Tim Ibadah_Kampus' ||
+                      Auth::user()->jabatan == 'Koordinator Divisi Konseling' ||
+                      Auth::user()->jabatan == 'Koordinator Divisi Creative' ) {
+                return redirect('/home_koor');
+
         }
     }
-
-
+}
 
      public function logout(){
         Auth::logout();

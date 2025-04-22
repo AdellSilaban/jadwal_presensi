@@ -15,13 +15,10 @@ class CreateJadwalTable extends Migration
     {
         Schema::create('jadwal', function (Blueprint $table) {
             $table->bigIncrements('jadwal_id')->unsigned()->autoIncrement();
-            $table->unsignedBigInteger('vol_id');
-            $table->foreign('vol_id')->references('vol_id')->on('volunteer'); 
             $table->unsignedBigInteger('divisi_id');
             $table->foreign('divisi_id')->references('divisi_id')->on('divisi'); 
             $table->date('tgl_jadwal');
             $table->string('agenda', 100);
-            $table->string('petugas', 100);
             $table->timestamps();
         });
     }

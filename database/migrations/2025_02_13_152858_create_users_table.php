@@ -15,8 +15,9 @@ class CreateUsersTable extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->bigIncrements('id')->unsigned()->autoIncrement();
+            $table->unsignedBigInteger('divisi_id')->nullable();
+            $table->foreign('divisi_id')->references('divisi_id')->on('divisi'); 
             $table->string('nama');
-            // $table->enum('jabatan', ['Kepala LPKKSK', 'Koordinator Divisi PKK Live', 'Koordinator Divisi Tim Ibadah Kampus', 'Koordinator Divisi Konseling', 'Koordinator Divisi Creative']);
             $table->string('jabatan');
             $table->string('email');
             $table->string('password');

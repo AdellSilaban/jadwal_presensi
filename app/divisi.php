@@ -18,5 +18,11 @@ class divisi extends Model
     protected $fillable = [
         'divisi_id',
         'nama_divisi',
+        'desk_divisi',
     ];
+
+    public function volunteer()
+    {
+        return $this->hasMany(volunteer::class, 'divisi_id');
+    }
 }

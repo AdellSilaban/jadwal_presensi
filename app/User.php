@@ -16,17 +16,19 @@ class User extends Authenticatable
      * @var array
      */
     protected $fillable = [
-        'id',
+        'divisi_id',
         'nama',
         'jabatan',
          'email',
         'password',
+        'remember_token',
     ];
 
     public function divisi()
     {
-        return $this->belongsTo(divisi::class);
+        return $this->belongsTo(divisi::class, 'divisi_id');
     }
+
 
     /**
      * The attributes that should be hidden for arrays.

@@ -11,7 +11,7 @@
  * Licensed under MIT (https://github.com/twbs/bootstrap/blob/main/LICENSE)
  */
 :root {
-  --blue: #4e73df;
+  --blue: #283593;
   --indigo: #6610f2;
   --purple: #6f42c1;
   --pink: #e83e8c;
@@ -24,7 +24,7 @@
   --white: #fff;
   --gray: #858796;
   --gray-dark: #5a5c69;
-  --primary: #4e73df;
+  --primary: #283593;
   --secondary: #858796;
   --success: #1cc88a;
   --info: #36b9cc;
@@ -66,7 +66,7 @@ body {
   line-height: 1.5;
   color: #858796;
   text-align: left;
-  background-color: #fff;
+  background-color: #f5f9ff !important; 
 }
 
 [tabindex="-1"]:focus:not(:focus-visible) {
@@ -230,6 +230,8 @@ label {
   margin-bottom: 0.5rem;
 }
 
+
+
 button {
   border-radius: 0;
 }
@@ -289,6 +291,17 @@ button::-moz-focus-inner,
   border-style: none;
 }
 
+.btn-primary {
+  background-color: #4e73df;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+.btn-primary:hover {
+  background-color: #2e59d9;
+}
+
 input[type="radio"],
 input[type="checkbox"] {
   box-sizing: border-box;
@@ -328,14 +341,6 @@ progress {
   height: auto;
 }
 
-[type="search"] {
-  outline-offset: -2px;
-  -webkit-appearance: none;
-}
-
-[type="search"]::-webkit-search-decoration {
-  -webkit-appearance: none;
-}
 
 ::-webkit-file-upload-button {
   font: inherit;
@@ -2350,6 +2355,16 @@ textarea.form-control {
   cursor: pointer;
 }
 
+.btn-action {
+  border-radius: 5px;
+  padding: 8px 12px;
+  transition: background-color 0.3s;
+}
+
+.btn-action:hover {
+  background-color: #f0f0f0;
+}
+
 a.btn.disabled,
 fieldset:disabled a.btn {
   pointer-events: none;
@@ -4067,6 +4082,21 @@ input[type="button"].btn-block {
   border-color: #dddfeb #dddfeb #fff;
 }
 
+  .nav-item .nav-link {
+        font-size: 1.1rem; /* Ukuran font lebih besar */
+        padding: 0.75rem 1rem; /* Padding untuk memperbesar tombol */
+        border-radius: 0.5rem; /* Sudut bulat */
+        transition: transform 0.2s, box-shadow 0.2s, background-color 0.2s, color 0.2s; /* Transisi untuk semua efek */
+    }
+
+    .nav-item .nav-link:hover,
+    .nav-item .nav-link:focus {
+        transform: translateY(-3px); /* Efek 3D saat hover */
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Efek bayangan saat hover */
+    }
+
+  
+
 .nav-tabs .dropdown-menu {
   margin-top: -1px;
   border-top-left-radius: 0;
@@ -4111,6 +4141,8 @@ input[type="button"].btn-block {
   align-items: center;
   justify-content: space-between;
   padding: 0.5rem 1rem;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
 }
 
 .navbar .container,
@@ -4121,19 +4153,19 @@ input[type="button"].btn-block {
   justify-content: space-between;
 }
 
-.navbar-brand {
+/* .navbar-brand {
   display: inline-block;
   padding-top: 0.3125rem;
   padding-bottom: 0.3125rem;
   margin-right: 1rem;
-  font-size: 1.25rem;
+  font-size: 10.25rem;
   line-height: inherit;
   white-space: nowrap;
 }
 
 .navbar-brand:hover, .navbar-brand:focus {
   text-decoration: none;
-}
+} */
 
 .navbar-nav {
   display: flex;
@@ -4148,9 +4180,14 @@ input[type="button"].btn-block {
   padding-left: 0;
 }
 
-.navbar-nav .dropdown-menu {
+/* .navbar-nav .dropdown-menu {
   position: static;
   float: none;
+} */
+
+.dropdown-menu {
+  border-radius: 0.75rem;
+  font-size: 0.875rem;
 }
 
 .navbar-text {
@@ -4496,6 +4533,10 @@ input[type="button"].btn-block {
   background-clip: border-box;
   border: 1px solid #e3e6f0;
   border-radius: 0.35rem;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+  padding: 20px;
 }
 
 .card > hr {
@@ -10187,14 +10228,6 @@ a:focus {
   background-color: #dddfeb;
 }
 
-.topbar .navbar-search {
-  width: 25rem;
-}
-
-.topbar .navbar-search input {
-  font-size: 0.85rem;
-  height: auto;
-}
 
 .topbar .topbar-divider {
   width: 0;
@@ -10323,9 +10356,28 @@ a:focus {
 }
 
 .sidebar {
-  width: 6.5rem;
-  min-height: 100vh;
+  width: 240px; /* Sesuaikan ukuran sidebar */
+  background-color: #2c7be5;
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
 }
+
+
+.sidebar a {
+  font-family: 'Nunito Sans', sans-serif; /* Ganti dengan font pilihan Anda */
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: 1.6;
+  color: #333; /* Ganti dengan warna pilihan Anda */
+  text-decoration: none;
+  display: block;
+  padding: 10px;
+  border-radius: 5px;
+  transition: background-color 0.3s;
+}
+
 
 .sidebar .nav-item {
   position: relative;
@@ -10736,6 +10788,13 @@ a:focus {
   color: rgba(255, 255, 255, 0.5);
 }
 
+/* Tambahan untuk geser konten utama */
+#content-wrapper {
+  margin-left: 240px; /* sesuaikan dengan lebar sidebar kamu */
+  transition: margin-left 0.3s ease;
+}
+
+
 .btn-circle {
   border-radius: 100%;
   height: 2.5rem;
@@ -10863,8 +10922,16 @@ a:focus {
   }
 }
 
+****************Login*******************
+
+.login-card {
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+}
+
 .bg-login-image {
-  background: url("https://source.unsplash.com/K4mSJ7kc0As/600x800");
+  background: url('assets/img/login-img.svg');
   background-position: center;
   background-size: cover;
 }
@@ -10887,8 +10954,8 @@ form.user .custom-checkbox.small label {
 
 form.user .form-control-user {
   font-size: 0.8rem;
-  border-radius: 10rem;
-  padding: 1.5rem 1rem;
+  border-radius: 10px;
+  padding: 1rem;
 }
 
 form.user .btn-user {
@@ -10897,79 +10964,56 @@ form.user .btn-user {
   padding: 0.75rem 1rem;
 }
 
-.btn-google {
-  color: #fff;
-  background-color: #ea4335;
-  border-color: #fff;
+****button search*****
+
+.search-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 370px;
+  margin: 0 auto;
 }
 
-.btn-google:hover {
-  color: #fff;
-  background-color: #e12717;
-  border-color: #e6e6e6;
+.search-icon {
+  position: absolute;
+  top: 50%;
+  left: 14px;
+  transform: translateY(-50%);
+  color: #c0c4cc;
+  font-size: 1rem;
 }
 
-.btn-google:focus, .btn-google.focus {
-  color: #fff;
-  background-color: #e12717;
-  border-color: #e6e6e6;
-  box-shadow: 0 0 0 0.2rem rgba(255, 255, 255, 0.5);
+.search-input {
+  width: 100%;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 20px;
+  background-color: #f5f8fc;
+  font-size: 0.95rem;
+  color: #333;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+  transition: box-shadow 0.2s ease;
 }
 
-.btn-google.disabled, .btn-google:disabled {
-  color: #fff;
-  background-color: #ea4335;
-  border-color: #fff;
+.search-input:focus {
+  border-color: #4e73df;
+  box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25);
 }
 
-.btn-google:not(:disabled):not(.disabled):active, .btn-google:not(:disabled):not(.disabled).active,
-.show > .btn-google.dropdown-toggle {
-  color: #fff;
-  background-color: #d62516;
-  border-color: #dfdfdf;
+tr:hover {
+  background-color: #f1f5f9;
+  transition: 0.2s ease-in-out;
 }
 
-.btn-google:not(:disabled):not(.disabled):active:focus, .btn-google:not(:disabled):not(.disabled).active:focus,
-.show > .btn-google.dropdown-toggle:focus {
-  box-shadow: 0 0 0 0.2rem rgba(255, 255, 255, 0.5);
+.table-responsive {
+  margin-bottom: 2rem;
 }
 
-.btn-facebook {
-  color: #fff;
-  background-color: #3b5998;
-  border-color: #fff;
-}
 
-.btn-facebook:hover {
-  color: #fff;
-  background-color: #30497c;
-  border-color: #e6e6e6;
-}
 
-.btn-facebook:focus, .btn-facebook.focus {
-  color: #fff;
-  background-color: #30497c;
-  border-color: #e6e6e6;
-  box-shadow: 0 0 0 0.2rem rgba(255, 255, 255, 0.5);
-}
 
-.btn-facebook.disabled, .btn-facebook:disabled {
-  color: #fff;
-  background-color: #3b5998;
-  border-color: #fff;
-}
 
-.btn-facebook:not(:disabled):not(.disabled):active, .btn-facebook:not(:disabled):not(.disabled).active,
-.show > .btn-facebook.dropdown-toggle {
-  color: #fff;
-  background-color: #2d4373;
-  border-color: #dfdfdf;
-}
 
-.btn-facebook:not(:disabled):not(.disabled):active:focus, .btn-facebook:not(:disabled):not(.disabled).active:focus,
-.show > .btn-facebook.dropdown-toggle:focus {
-  box-shadow: 0 0 0 0.2rem rgba(255, 255, 255, 0.5);
-}
+
 
 .error {
   color: #5a5c69;
@@ -11256,6 +11300,16 @@ form.user .btn-user {
   }
 }
 
+.status-aktif {
+  background-color: #d4edda; /* Warna latar belakang hijau muda */
+  color: #155724; /* Warna teks hijau tua */
+}
+
+.status-tidak-aktif {
+  background-color: #f8d7da; /* Warna latar belakang merah muda */
+  color: #721c24; /* Warna teks merah tua */
+}
+
 .error:before {
   content: attr(data-text);
   position: absolute;
@@ -11282,3 +11336,23 @@ footer.sticky-footer .copyright {
 body.sidebar-toggled footer.sticky-footer {
   width: 100%;
 }
+
+.btn {
+  transition: all 0.2s ease-in-out;
+  font-weight: 500;
+}
+
+.btn-primary {
+  background-color: #3b82f6;
+  border: none;
+}
+
+.btn-primary:hover {
+  background-color: #2563eb;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
+
+
+
+

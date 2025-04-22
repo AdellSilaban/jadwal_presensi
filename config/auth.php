@@ -46,18 +46,10 @@ return [
             'provider' => 'users',
             'hash' => false,
         ],
-
-        'koordinator' => [
-            'driver' => 'session',
-            'provider' => 'koordinator',
-        ],
-        'kepala_lpkksk' => [
-            'driver' => 'session',
-            'provider' => 'kepala_lpkksk', 
-        ],
+        
         'volunteer' => [
             'driver' => 'session',
-            'provider' => 'volunteer', 
+            'provider' => 'volunteers', 
         ],
     ],
 
@@ -79,28 +71,15 @@ return [
     */
 
     'providers' => [
-        'users' => [
-            'driver' => 'eloquent',
-            'model' => App\User::class,
-        ],
+    'users' => [
+        'driver' => 'eloquent',
+        'model' => App\user::class,
+    ],
+    'volunteers' => [
+        'driver' => 'eloquent',
+        'model' => App\volunteer::class, // Huruf kecil 'v'
+    ],
 
-        'koordinator' => [
-            'driver' => 'eloquent',
-            'model' => App\koordinator::class,
-        ],
-        'kepala_lpkksk' => [
-            'driver' => 'eloquent',
-            'model' => App\kepala_lpkksk::class, 
-        ],
-        'volunteer' => [
-            'driver' => 'eloquent',
-            'model' => App\volunteer::class, 
-        ],
-
-        // 'users' => [
-        //     'driver' => 'database',
-        //     'table' => 'users',
-        // ],
     ],
 
     /*

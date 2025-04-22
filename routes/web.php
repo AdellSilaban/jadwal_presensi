@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
-    return view('layout/main');
+return view('/login');
 });
 //authController
 // Route::group(['middleware' => ['guest']], function(){
@@ -27,46 +27,76 @@ Route::get('/logout', 'authController@logout');
 // });
 //koorController
 ///Koordinator PKK Live
-Route::get('/jadwal_vltLive', 'koorController@jadwal_vltLive');
-Route::get('/validasi_presensiLive', 'koorController@validasi_presensiLive');
-Route::get('/home_koorLive', 'koorController@home_koorLive');
-Route::get('/tambah_vltLive', 'koorController@tambah_vltLive');
-Route::get('/edit_vltLive', 'koorController@edit_vltLive');
-Route::get('/tambah_jdwlLive', 'koorController@tambah_jdwlLive');
-Route::get('/edit_jdwlLive', 'koorController@edit_jdwlLive'); 
+Route::get('/jadwal_vlt', 'koorController@jadwal_vlt');
+Route::get('/validasi_presensi', 'koorController@validasi_presensi');
+Route::get('/home_koor', 'koorController@home_koor');
+Route::get('/tambah_vlt', 'koorController@tambah_vlt');
+Route::get('/edit_vlt/{vol_id}', 'koorController@edit_vlt')->name('edit_vlt');
+Route::put('/updateVlt/{vol_id}', 'koorController@updateVlt')->name('updateVlt'); 
+Route::post('/simpanVlt', 'koorController@simpanVlt');
+Route::delete('/hapus_vlt/{vol_id}', 'koorController@hapus_vlt')->name('hapus_vlt');
 
-Route::post('/simpanVltLive', 'koorController@simpanVltLive');
+//jadwal
+Route::get('/tambah_jadwal', 'koorController@tambah_jadwal');
+Route::get('/edit_jadwal/{jadwal_id}', 'koorController@edit_jadwal')->name('edit_jadwal'); 
+Route::put('/updateJadwal/{jadwal_id}', 'koorController@updateJadwal')->name('updateJadwal'); 
+Route::delete('/hapus_jdwl/{jadwal_id}', 'koorController@hapus_jdwl')->name('hapus_jdwl');
+Route::post('/simpanjadwal', 'koorController@simpanjadwal');
+
+
+
+//mengirim email
 Route::post('/cekEmail', 'koorController@cekEmail');
+Route::get('/kirimEmail/{vol_id}', 'koorController@kirimEmail')->name('kirimEmail');
 
+// Route untuk menampilkan form reset password (gunakan salah satu nama yang konsisten)
+Route::get('/reset-password/{token}', 'koorController@reset_now')->name('reset_password'); // Gunakan 'reset_password' sebagai nama yang umum untuk tautan email
+
+// Route untuk menampilkan kembali form reset password jika token tidak valid
+Route::get('/reset-password/invalid', 'koorController@showInvalidTokenForm')->name('reset'); // Route terpisah untuk token tidak valid
+
+// Route untuk memproses pengiriman form reset password
+Route::post('/updatePassword', 'vltController@updatePassword')->name('updatePassword');
 
 ///koordinator Creative
-Route::get('/home_koorcrv', 'koorcreativeController@home_koorcrv');
-Route::get('/task_mn', 'koorcreativeController@task_mn');
-Route::get('/tambah_task', 'koorcreativeController@tambah_task');
-Route::get('/edit_task', 'koorcreativeController@edit_task');
+Route::get('/home_koorcrv', 'koorController@home_koorcrv');
+Route::get('/task_mn', 'koorController@task_mn');
+Route::get('/tambah_task', 'koorController@tambah_task');
+Route::post('/simpan_task', 'koorController@simpan_task');
+Route::get('/edit_task/{tugas_id}', 'koorController@edit_task')->name('edit_task'); 
+Route::put('/updateTask/{tugas_id}', 'koorController@updateTask')->name('updateTask'); 
+Route::delete('/hapus_task/{tugas_id}', 'koorController@hapus_task')->name('hapus_task');
 
-///koordinator konseling
-Route::get('/jadwal_vltkonsul', 'koorkonsulController@jadwal_vltkonsul');
-Route::get('/validasi_presensikonsul', 'koorkonsulController@validasi_presensikonsul');
-Route::get('/home_koorkonsul', 'koorkonsulController@home_koorkonsul');
-Route::get('/tambah_vltkonsul', 'koorkonsulController@tambah_vltkonsul');
-Route::get('/edit_vltkonsul', 'koorkonsulController@edit_vltkonsul');
-Route::get('/tambah_jdwlkonsul', 'koorkonsulController@tambah_jdwlkonsul');
-Route::get('/edit_jadwalkonsul', 'koorkonsulController@edit_jadwalkonsul');
-
-///Koordinator TIK
-Route::get('/jadwal_vltTik', 'koortikController@jadwal_vltTik');
-Route::get('/validasi_presensiTik', 'koortikController@validasi_presensiTik');
-Route::get('/home_koorTik', 'koortikController@home_koorTik');
-Route::get('/tambah_vltTik', 'koortikController@tambah_vltTik');
-Route::get('/edit_vltTik', 'koortikController@edit_vltTik');
-Route::get('/tambah_jdwlTik', 'koortikController@tambah_jdwlTik');
-Route::get('/edit_jdwlTik', 'koortikController@edit_jdwlTik');
+Route::get('/tambah_vltcrv', 'koorController@tambah_vltcrv');
+Route::post('/simpanVltcrv', 'koorController@simpanVltcrv');
+Route::get('/edit_vltcrv/{vol_id}', 'koorController@edit_vltcrv')->name('edit_vltcrv');
+Route::put('/updateVltcrv/{vol_id}', 'koorController@updateVltcrv')->name('updateVltcrv'); 
+Route::delete('/hapus_vltcrv/{vol_id}', 'koorController@hapus_vltcrv')->name('hapus_vltcrv');
 
 //vltController
-Route::get('/home_vlt', 'vltController@home_vlt');
+Route::get('/loginVol', 'vltController@loginVol')->name('loginVol');
+Route::post('/cekloginVol', 'vltController@cekloginVol')->name('cekloginVol');
+Route::get('/home_vlt', 'vltController@home_vlt')->name('home_vlt');
 Route::get('/home_vltcreative', 'vltController@home_vltcreative');
 Route::get('/profile_vlt', 'vltController@profile_vlt');
+Route::get('/checkIn/{jadwal_id}', 'vltController@checkIn')->name('checkIn');
+Route::get('/checkOut/{jadwal_id}', 'vltController@checkOut')->name('checkOut');
+
+
+//volunteer creative
+Route::get('/home_vltcreative', 'vltController@home_vltcreative')->name('home_vltcreative');
+Route::get('/volunteer/tugas/{tugas_id}/isi-peran', 'vltController@updatePeran')->name('isi.peran');
+Route::post('/volunteer/tugas/{tugas_id}/simpan-peran', 'vltController@updatePeran')->name('simpan.peran');
+
+Route::post('/updateTaskStatus/{tugas_id}/{status}', 'vltController@updateTaskStatus')->name('updateTaskStatus');
+
+
 
 //kepala LPKKSK
 Route::get('/home_kepalaPKK', 'KPLController@home_kepalaPKK');
+Route::get('/div_kepalaPKK', 'KPLController@div_kepalaPKK');
+Route::get('/tambah_div', 'KPLController@tambah_div');
+Route::post('/simpanDiv', 'KPLController@simpanDiv');
+Route::get('/edit_div/{div_id}', 'KPLController@edit_div')->name('edit_div'); 
+Route::put('/updateDiv/{div_id}', 'KPLController@updateDiv')->name('updateDiv');
+Route::delete('/hapus_div/{divisi_id}', 'KPLController@hapus_div')->name('hapus_div');

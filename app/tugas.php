@@ -16,7 +16,7 @@ class tugas extends Model
     protected $primaryKey = 'tugas_id';
 
     protected $fillable = [
-        'tugas_id',
+        'divisi_id',
         'desk_tgs',
         'deadline',
         'status',
@@ -26,8 +26,11 @@ class tugas extends Model
 {
     return $this->belongsTo(divisi::class, 'divisi_id');
 }
-    public function volunteer()
-{
-    return $this->belongsTo(volunteer::class, 'vol_id');
+
+public function volunteers() {
+    return $this->belongsToMany(Volunteer::class, 'tugas_volunteer', 'tugas_id', 'vol_id')
+                ->withPivot('status', 'peran')
+                ->withTimestamps();
 }
+
 }

@@ -18,12 +18,16 @@ class CreateVolunteerTable extends Migration
             $table->unsignedBigInteger('divisi_id');
             $table->foreign('divisi_id')->references('divisi_id')->on('divisi'); // Foreign key mengacu ke tabel divisi
             $table->string('nama', 100);
-            $table->string('nim', 100);
+            $table->string('nim', 100)->unique();
             $table->string('fakultas', 100);
             $table->string('jurusan', 100);
-            $table->string('periode', 100);
-            $table->string('email', 100);
-            $table->string('password', 255);
+            $table->date('mulai_aktif');
+            $table->date('akhir_aktif');
+            $table->enum('status', ['Aktif', 'Tidak Aktif'])->default('Aktif');
+            $table->string('email', 255)->unique();
+            $table->string('password', 255)->nullable();
+            $table->string('reset_token')->nullable();
+            $table->timestamp('reset_token_expires_at')->nullable();
             $table->timestamps();
         });
     }

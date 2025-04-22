@@ -19,11 +19,10 @@ class CreatePresensiTable extends Migration
             $table->foreign('jadwal_id')->references('jadwal_id')->on('jadwal'); 
             $table->unsignedBigInteger('vol_id');
             $table->foreign('vol_id')->references('vol_id')->on('volunteer'); 
-            $table->date('tgl_presensi');
-            $table->dateTime('check_in');
-            $table->dateTime('check_out');
-            $table->time('total_jam');
-            $table->enum('status', ['Diterima', 'Ditolak']);
+            $table->dateTime('check_in')->nullable();
+            $table->dateTime('check_out')->nullable();
+            $table->time('total_jam')->nullable();
+            $table->enum('status', ['Diproses', 'Diterima', 'Ditolak']);
             $table->timestamps();
         });
     }
