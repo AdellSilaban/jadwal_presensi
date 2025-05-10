@@ -1,23 +1,77 @@
 @extends('layout.main')
 
 @section('sidebar')
-<li class="nav-item">
-    <a class="nav-link collapsed" href="home_koor"><i class="fas fa-fw fa-home"></i>
-        <span>Home</span>
-    </a>
-</li>
+<ul class="sidebar-nav" id="sidebar-nav">
+    @auth
+        @php $jabatan = Auth::user()->jabatan; @endphp
 
-<li class="nav-item">
-    <a class="nav-link collapsed" href="jadwal_vlt"><i class="fas fa-calendar-alt"></i>
-        <span>Jadwal Volunteer</span>
-    </a>
-</li>
+        <li class="nav-heading">Manajemen Volunteer</li>
+        <li class="nav-item">
+            <a class="nav-link collapsed" href="home_koor">
+                <i class="bi bi-house-door"></i>
+                <span>Home</span>
+            </a>
+        </li>
 
-<li class="nav-item">
-    <a class="nav-link collapsed" href="validasi_presensi"><i class="fas fa-check"></i>
-        <span>Validasi Presensi</span>
-    </a>
-</li>
+        <li class="nav-item">
+            <a class="nav-link collapsed" href="sub_divisi">
+                <i class="bi bi-calendar-event"></i>
+                <span>Sub Divisi</span>
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a class="nav-link collapsed" href="jadwal_vlt">
+                <i class="bi bi-calendar-event"></i>
+                <span>Jadwal Volunteer</span>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link collapsed" href="data_presensi">
+                <i class="bi bi-database"></i>
+                <span>Data Presensi</span>
+            </a>
+        </li>
+
+        {{-- Tambahkan menu ini untuk semua koordinator --}}
+        <li class="nav-item">
+            <a class="nav-link collapsed" href="{{ route('formuploadSertif') }}">
+                <i class="bi bi-upload"></i>
+                <span>Upload Sertifikat</span>
+            </a>
+        </li>
+
+        @if ($jabatan === 'Koordinator Divisi Creative')
+            <li class="nav-heading">Manajemen Tugas</li>
+            <li class="nav-item">
+                <a class="nav-link collapsed" href="task_mn">
+                    <i class="bi bi-list-task"></i>
+                    <span>Manajemen Tugas</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link collapsed" href="validasi_task">
+                    <i class="bi bi-check-circle"></i>
+                    <span>Validasi Tugas</span>
+                </a>
+            </li>
+        @elseif ($jabatan === 'Koordinator Divisi Konseling')
+            <li class="nav-heading">Manajemen Tugas</li>
+            <li class="nav-item">
+                <a class="nav-link collapsed" href="task_mn">
+                    <i class="bi bi-list-task"></i>
+                    <span>Manajemen Tugas</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link collapsed" href="validasi_task">
+                    <i class="bi bi-check-circle"></i>
+                    <span>Validasi Tugas</span>
+                </a>
+            </li>
+        @endif
+    @endauth
+</ul>
 @endsection
 
 @section('content')
@@ -35,7 +89,7 @@
           <input type="text"
                  class="form-control shadow-sm"
                  style="max-width: 260px; border-radius: 0.65rem; padding: 0.4rem 0.9rem; font-size: 0.9rem;"
-                 placeholder="Cari data...."
+                 placeholder="Cari Tanggal, Petugas, Agenda..."
                  id="searchInput"
                  onkeyup="cariData()" />
         </div>
@@ -43,7 +97,7 @@
         <!-- Tombol Tambah -->
         <a href="/tambah_jadwal" class="btn btn-primary shadow-sm px-3 py-1 rounded-pill d-flex align-items-center gap-2"
            style="font-size: 0.9rem;">
-          <i class="fas fa-plus fa-sm"></i> Tambah Jadwal
+          <i class="bi bi-person-plus"></i> Tambah Jadwal
         </a>
       </div>
     </div>
@@ -58,6 +112,8 @@
                             <th scope="col" style="text-align: center;">No</th>
                             <th scope="col" style="text-align: center;">Tanggal Kegiatan</th>
                             <th scope="col" style="text-align: center;">Agenda</th>
+                            <th scope="col" style="text-align: center;">Jam Buka Presensi</th>
+                            <th scope="col" style="text-align: center;">Jam Tutup Presensi</th>
                             <th scope="col" style="text-align: center;">Petugas</th>
                             <th scope="col" style="text-align: center;">Divisi</th>
                             <th scope="col" style="text-align: center;">Aksi</th>
@@ -69,6 +125,8 @@
                                 <th scope="row" style="text-align: center; vertical-align: middle;">{{ $loop->iteration }}</th>
                                 <td style="text-align: center; vertical-align: middle;">{{ $jdwl->tgl_jadwal->format('d-m-Y') }}</td>
                                 <td style="text-align: center; vertical-align: middle;">{{ $jdwl->agenda }}</td>
+                                <td style="text-align: center; vertical-align: middle;">{{ $jdwl->jam_buka }}</td>
+                                <td style="text-align: center; vertical-align: middle;">{{ $jdwl->jam_tutup }}</td>
                                 <td style="text-align: center; vertical-align: middle;">
                                     @foreach ($jdwl->volunteers as $volunteer)
                                         {{ $volunteer->nama }} <br>
@@ -84,8 +142,8 @@
                                     <a href="{{ route('hapus_jdwl', $jdwl->jadwal_id) }}" class="btn btn-danger btn-sm" onclick="confirmDelete(event, {{ $jdwl->jadwal_id }})">
                                         <i class="bi-trash"></i> Hapus
                                     </a>
-
-
+                                </td>
+                            </tr>
                                            <script>
                                             function confirmDelete(event, jadwal_id) {
                                                 event.preventDefault();
@@ -112,8 +170,6 @@
                                             }
                                         </script>
                                     
-                                </td>
-                            </tr>
 
                             <script>
                                 function cariData() {
@@ -152,25 +208,49 @@
 @endsection
 
 @section('topbar')
-    <ul class="navbar-nav ml-auto"> 
-        <li class="nav-item dropdown no-arrow">
-            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
-               data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                <span class="mr-2 d-none d-lg-inline text-gray-600 small">{{ $user->nama }}</span>
-            </a>
-            <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in" 
-                 aria-labelledby="userDropdown">
-                <a class="dropdown-item" href="#">
-                    <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
-                    Profile
-                </a>
-                <div class="dropdown-divider"></div>
-                <a class="dropdown-item" href="/logout">
-                    <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
-                    Logout
-                </a>
-            </div>
-        </li>
-    </ul> 
+<nav class="header-nav ms-auto">
+    <ul class="d-flex align-items-center">
+      <li class="nav-item dropdown pe-3">
 
+        <a class="nav-link nav-profile d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown">
+            <span class="me-2 fw-semibold text-dark">{{ $user->nama }}</span>
+            <i class="bi bi-person-circle fs-4 text-primary"></i>
+        </a>
+
+        <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
+          <li class="dropdown-header">
+            <h6>{{ $user->nama }}</h6>
+            <span>{{ $user->jabatan }}</span>
+          </li>
+
+          <li><hr class="dropdown-divider"></li>
+
+          <li>
+            <a class="dropdown-item d-flex align-items-center" href="/profile_koor">
+              <i class="bi bi-person"></i>
+              <span>Profile</span>
+            </a>
+          </li>
+
+          <li>
+            <a class="dropdown-item d-flex align-items-center" href="/ubah_pass">
+              <i class="bi bi-key"></i>
+              <span>Reset Password</span>
+            </a>
+          </li>
+
+          <li><hr class="dropdown-divider"></li>
+
+          <li>
+            <a class="dropdown-item d-flex align-items-center" href="/logout">
+              <i class="bi bi-box-arrow-right"></i>
+              <span>Logout</span>
+            </a>
+          </li>
+        </ul><!-- End Profile Dropdown Items -->
+
+      </li><!-- End Profile Nav -->
+    </ul>
+</nav>
 @endsection
+

@@ -1,121 +1,167 @@
 @extends('layout.main')
 
 @section('sidebar')
-<li class="nav-item">
+<ul class="sidebar-nav" id="sidebar-nav">
+    <li class="nav-heading">Volunteer</li>
+    <li class="nav-item">
     <a class="nav-link collapsed" href="home_kepalaPKK"><i class="fas fa-users"></i>
         <span>Data Volunteer</span>
     </a>
 </li>
 
-<li class="nav-item">
+<ul class="sidebar-nav" id="sidebar-nav">
+    <li class="nav-heading">Divisi</li>
+    <li class="nav-item">
     <a class="nav-link collapsed" href="div_kepalaPKK"><i class="fas fa-layer-group"></i>
         <span>Data Divisi</span>
     </a>
 </li>
-
-{{-- <li class="nav-item">
-    <a class="nav-link collapsed" href="koor_kepalaPKK "><i class="fas fa-check"></i>
-        <span>Data Koordinator</span>
-    </a>
-</li>
-    --}}
 @endsection
 
 @section('content')
-    <div id="content">
-        <div class="container-fluid">
-            <div>
-                <h1 class="h3 mb-0 text-gray-800">Data Divisi</h1>
-                <br>
-                <!--TAMBAH DATA BARU VOLUNTEER-->
-                <a href="/tambah_div" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i class="fas fa-plus fa-sm text-white-50"></i> Tambah Data Divisi</a>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<div id="content">
+    <div class="container-fluid">
+        <h1 class="h4 mb-1 text-gray-800">Data Divisi</h1>
+        <p style="font-size: 0.9rem;">Daftar divisi yang tersedia.</p>
+        <br>
+
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+            <!-- Search Input -->
+            <div class="flex-grow-1 me-3">
+                <input type="text"
+                       class="form-control shadow-sm"
+                       style="max-width: 260px; border-radius: 0.65rem; padding: 0.4rem 0.9rem; font-size: 0.9rem;"
+                       placeholder="Cari Nama Divisi..."
+                       id="searchInput"
+                       onkeyup="cariData()" />
             </div>
 
-            <div class="card-body">
-                <table class="table table-striped ">
-                    <thead>
+            <!-- Tambah Divisi -->
+            <a href="/tambah_div" class="btn btn-primary shadow-sm px-3 py-1 rounded-pill d-flex align-items-center gap-2"
+               style="font-size: 0.9rem;">
+                <i class="bi bi-person-plus"></i> Tambah Data Divisi
+            </a>
+        </div>
+
+        <div class="card-body">
+            <div class="table-responsive" style="overflow-x: auto;">
+                <table class="table table-bordered table-hover shadow rounded" style="border-color: #dee2e6;">
+                    <thead style="background: linear-gradient(to right, #f0f0f0, #e0e0e0);">
                         <tr>
-                            <th scope="col">No</th>
-                            <th scope="col">Nama Divisi</th>
-                            <th scope="col">Deskripsi Divisi</th>
-                            <th scope="col">Aksi</th>
+                            <th class="text-center">No</th>
+                            <th class="text-center">Nama Divisi</th>
+                            <th class="text-center">Deskripsi Divisi</th>
+                            <th class="text-center">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach ($divisi as $div)
-                            <tr>
-                                <th scope="row">{{ $loop->iteration }}</th>
-                                <td>{{ $div->nama_divisi }}</td>
-                                <td>{{ $div->desk_divisi }}</td>
-                           <td>
-                            <a href="{{ route('edit_div', $div->divisi_id) }}" class="btn btn-success btn-sm shadow"><i class="fas fa-pen"></i> Edit</a> 
-                            <a href="{{ route('hapus_div', $div->divisi_id) }}" class="btn btn-danger btn-sm" onclick="confirmDelete(event, {{ $div->divisi_id }})"><i class="bi-trash"></i> Hapus</a>
-                          
-                            <script>
-                                function confirmDelete(event, divisi_id) {
-                                    event.preventDefault();
-                            
-                                    Swal.fire({
-                                        title: 'Apakah Anda Yakin?',
-                                        text: 'Data yang dihapus tidak dapat dikembalikan.',
-                                        icon: 'warning',
-                                        showCancelButton: true,
-                                        confirmButtonColor: '#3085d6',
-                                        cancelButtonColor: '#d33',
-                                        confirmButtonText: 'Ya, Hapus!',
-                                        cancelButtonText: 'Batal'
-                                    }).then((result) => {
-                                        if (result.isConfirmed) {
-                                            const form = document.createElement('form');
-                                            form.method = 'POST';
-                                            form.action = "{{ route('hapus_div', '') }}/" + divisi_id;
-                                            form.innerHTML = ` @csrf @method('DELETE')`;
-                                            document.body.appendChild(form);
-                                            form.submit();
-                                        }
-                                    });
-                                }
-                            </script>
-                    </td>
-                </tr>
-        @endforeach
+                            <tr style="background-color: #f9f9f9;">
+                                <td class="text-center">{{ $loop->iteration }}</td>
+                                <td class="text-center">{{ $div->nama_divisi }}</td>
+                                <td class="text-center">{{ $div->desk_divisi }}</td>
+                                <td class="text-center">
+                                    <a href="{{ route('edit_div', $div->divisi_id) }}" class="btn btn-success btn-sm shadow">
+                                        <i class="bi bi-pencil me-1"></i> Edit
+                                    </a> 
+                                    <a href="{{ route('hapus_div', $div->divisi_id) }}" class="btn btn-danger btn-sm" 
+                                       onclick="confirmDelete(event, {{ $div->divisi_id }})">
+                                        <i class="bi bi-trash"></i> Hapus
+                                    </a>
+                                </td>
+                            </tr>
+                        @endforeach
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
+</div>
+
+<script>
+    function confirmDelete(event, divisi_id) {
+        event.preventDefault();
+
+        Swal.fire({
+            title: 'Apakah Anda Yakin?',
+            text: 'Data yang dihapus tidak dapat dikembalikan.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Ya, Hapus!',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = "{{ route('hapus_div', '') }}/" + divisi_id;
+                form.innerHTML = `@csrf @method('DELETE')`;
+                document.body.appendChild(form);
+                form.submit();
+            }
+        });
+    }
+
+    function cariData() {
+        const input = document.getElementById("searchInput");
+        const filter = input.value.toUpperCase();
+        const rows = document.querySelectorAll("tbody tr");
+
+        rows.forEach(row => {
+            const namaDiv = row.children[1].textContent.toUpperCase();
+            row.style.display = namaDiv.includes(filter) ? "" : "none";
+        });
+    }
+</script>
 @endsection
 
 @section('topbar')
-    <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
-        <i class="fa fa-bars"></i>
-    </button>
-    <form class="d-none d-sm-inline-block form-inline mr-auto ml-md-3 my-2 my-md-0 mw-100 navbar-search">
-        <div class="input-group">
-            <input type="text" class="form-control bg-light border-0 small" placeholder="Search for..."
-                aria-label="Search" aria-describedby="basic-addon2">
-            <div class="input-group-append">
-                <button class="btn btn-primary" type="button">
-                    <i class="fas fa-search fa-sm"></i>
-                </button>
-            </div>
-        </div>
-    </form>
+<nav class="header-nav ms-auto">
+    <ul class="d-flex align-items-center">
+      <li class="nav-item dropdown pe-3">
 
-    <ul class="navbar-nav ml-auto">
-        <li class="nav-item dropdown no-arrow">
-            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
-                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                <span class="mr-2 d-none d-lg-inline text-gray-600 small">{{ Auth::user()->nama }}</span>
+        <a class="nav-link nav-profile d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown">
+            <span class="me-2 fw-semibold text-dark">{{ $user->nama }}</span>
+            <i class="bi bi-person-circle fs-4 text-primary"></i>
+        </a>
+
+        <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
+          <li class="dropdown-header">
+            <h6>{{ $user->nama }}</h6>
+            <span>{{ $user->jabatan }}</span>
+          </li>
+
+          <li><hr class="dropdown-divider"></li>
+
+          <li>
+            <a class="dropdown-item d-flex align-items-center" href="/profile_koor">
+              <i class="bi bi-person"></i>
+              <span>Profile</span>
             </a>
-            <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
-                aria-labelledby="userDropdown">
-                <div class="dropdown-divider"></div>
-                <a class="dropdown-item" href="/logout">
-                    <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
-                    Logout
-                </a>
-            </div>
-        </li>
+          </li>
+
+          <li>
+            <a class="dropdown-item d-flex align-items-center" href="/ubah_pass">
+              <i class="bi bi-key"></i>
+              <span>Reset Password</span>
+            </a>
+          </li>
+
+          <li><hr class="dropdown-divider"></li>
+
+          <li>
+            <a class="dropdown-item d-flex align-items-center" href="/logout">
+              <i class="bi bi-box-arrow-right"></i>
+              <span>Logout</span>
+            </a>
+          </li>
+        </ul><!-- End Profile Dropdown Items -->
+
+      </li><!-- End Profile Nav -->
     </ul>
+</nav>
 @endsection
+

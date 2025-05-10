@@ -16,7 +16,7 @@ class CreateKoordinatorTable extends Migration
         Schema::create('koordinator', function (Blueprint $table) {
             $table->bigIncrements('vol_id')->unsigned()->autoIncrement();
             $table->unsignedBigInteger('divisi_id');
-            $table->foreign('divisi_id')->references('divisi_id')->on('divisi'); // Foreign key mengacu ke tabel divisi
+            $table->foreign('divisi_id')->references('divisi_id')->on('divisi')->onDelete('cascade');// Foreign key mengacu ke tabel divisi
             $table->string('nama_koor', 100);
             $table->string('email', 100);
             $table->string('password', 255);

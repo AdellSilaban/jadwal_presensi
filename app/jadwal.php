@@ -3,6 +3,8 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
+use Carbon\Carbon;
+
 
 
 
@@ -15,6 +17,8 @@ class jadwal extends Model
         'divisi_id',
         'tgl_jadwal',
         'agenda',
+        'jam_buka',
+        'jam_tutup',
     ];
 
     protected $casts = [
@@ -30,5 +34,13 @@ class jadwal extends Model
     {
         return $this->belongsTo(divisi::class, 'divisi_id');
     }  
+
+    public function getIsTodayAttribute()
+    {
+        return $this->tgl_jadwal->toDateString() === Carbon::now()->toDateString();
+    }
+
+    
+
 }
 

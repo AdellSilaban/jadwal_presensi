@@ -16,9 +16,11 @@ class CreateJadwalTable extends Migration
         Schema::create('jadwal', function (Blueprint $table) {
             $table->bigIncrements('jadwal_id')->unsigned()->autoIncrement();
             $table->unsignedBigInteger('divisi_id');
-            $table->foreign('divisi_id')->references('divisi_id')->on('divisi'); 
+            $table->foreign('divisi_id')->references('divisi_id')->on('divisi')->onDelete('cascade'); 
             $table->date('tgl_jadwal');
             $table->string('agenda', 100);
+            $table->time('jam_buka')->nullable();
+            $table->time('jam_tutup')->nullable();
             $table->timestamps();
         });
     }

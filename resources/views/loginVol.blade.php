@@ -1,64 +1,54 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 
 <head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login Volunteer</title>
 
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta name="description" content="">
-    <meta name="author" content="">
+  <!-- Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;600&display=swap" rel="stylesheet">
 
-    <title>Login Volunteer</title>
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <!-- Custom styles for this template-->
-    <link href="assets/css/sb-admin-2.css" rel="stylesheet">
+  <!-- Bootstrap -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
+  <!-- Custom CSS -->
+  <link href="{{ asset('assets/css/login.css') }}" rel="stylesheet">
 </head>
 
 <body>
+  <div class="d-flex justify-content-center align-items-center vh-100">
+    <div class="card card-login shadow p-4">
+      <div class="text-center mb-4">
+        <img src="{{ asset('assets/img/logo.png') }}" alt="Logo LPKKSK" class="logo mb-2">
+        <h5 class="fw-bold mb-0">LPKKSK UKDW</h5>
+        <small class="text-muted">Gunakan akunmu untuk masuk ke website.</small>
+      </div>
 
-    <div class="container">
-        <div class="row justify-content-center align-items-center min-vh-100">
-            <div class="col-xl-10 col-lg-12 col-md-9">
-                <div class="card login-card">
-                    <div class="row no-gutters">
-                        <div class="col-lg-6 d-none d-lg-block bg-login-image"></div>
-                        <div class="col-lg-6">
-                            <div class="p-5">
-                                <div class="text-center mb-4">
-                                    <h2 class="font-weight-bold text-primary">Volunteer Login</h2>
-                                    <p class="text-muted">Masuk ke akunmu untuk lanjut</p>
-                                </div>
-                                <form action="/cekloginVol" method="POST" class="user">
-                                    @csrf
-                                    <div class="form-group">
-                                        <input type="email" name="email" class="form-control form-control-user" placeholder="Email Address..." required>
-                                    </div>
-                                    <div class="form-group">
-                                        <input type="password" name="password" class="form-control form-control-user" placeholder="Password" required>
-                                    </div>
-                                    <button type="submit" class="btn btn-primary btn-user btn-block">
-                                        <i class="fas fa-sign-in-alt mr-2"></i> Login
-                                    </button>
-                                </form>
-                                <hr>
-                                
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+      <form method="POST" action="/cekloginVol">
+        @csrf
+        <div class="mb-3">
+          <input type="email" name="email" class="form-control" placeholder="Email" required autofocus>
         </div>
-    </div>
+        <div class="mb-4">
+          <input type="password" name="password" class="form-control" placeholder="Password" required>
+        </div>
+        <button type="submit" class="btn btn-login w-100">
+          <i class="fas fa-sign-in-alt me-2"></i> Log In
+        </button>
+      </form>
 
-    <!-- JS Scripts -->
-    <script src="assets/vendor/jquery/jquery.min.js"></script>
-    <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-    <script src="assets/vendor/jquery-easing/jquery.easing.min.js"></script>
-    <script src="assets/js/sb-admin-2.min.js"></script>
+      <p class="text-center mt-4 small-text">
+        Jika anda lupa password, bisa datangi koordinator divisi<br>untuk reset password.
+      </p>
+    </div>
+  </div>
+
+  <!-- Bootstrap Script -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>

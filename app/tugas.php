@@ -19,7 +19,7 @@ class tugas extends Model
         'divisi_id',
         'desk_tgs',
         'deadline',
-        'status',
+        'link_gdrive',
     ];
 
     public function divisi()
@@ -28,9 +28,10 @@ class tugas extends Model
 }
 
 public function volunteers() {
-    return $this->belongsToMany(Volunteer::class, 'tugas_volunteer', 'tugas_id', 'vol_id')
-                ->withPivot('status', 'peran')
+    return $this->belongsToMany(volunteer::class, 'tugas_volunteer', 'tugas_id', 'vol_id')
+                ->withPivot('status', 'peran', 'status_validasi', 'revisi_catatan')
                 ->withTimestamps();
 }
+
 
 }

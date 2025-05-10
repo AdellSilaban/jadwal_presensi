@@ -1,107 +1,103 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>LPKKSK UKDW</title>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
 
-    <!-- Fonts & Icons -->
-    <link href="{{ asset('assets/vendor/fontawesome-free/css/all.min.css') }}" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap" rel="stylesheet" />
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
-    
-    <!-- Styles -->
-    <link href="{{ asset('assets/css/sb-admin-2.css') }}" rel="stylesheet" />
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <title>LPKKSK UKDW</title>
 
-    <!-- Fix Footer CSS -->
-    <style>
-        html, body {
-            height: 100%;
-            margin: 0;
-        }
+  <!-- Favicons -->
+  <link href="{{ asset('assets/img/logo.png') }}" rel="icon">
+  <link href="{{ asset('assets/img/apple-touch-icon.png') }}" rel="apple-touch-icon">
 
-        body {
-            display: flex;
-            flex-direction: column;
-        }
+  <!-- Google Fonts -->
+  <link href="https://fonts.gstatic.com" rel="preconnect">
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Nunito:300,300i,400,400i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i" rel="stylesheet">
+    <!-- Tambahkan Bootstrap CSS dan Timepicker CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Vendor CSS Files -->
+  
+  <link href="{{ asset('assets/vendor/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
+  <link href="{{ asset('assets/vendor/bootstrap-icons/bootstrap-icons.css') }}" rel="stylesheet">
+  <link href="{{ asset('assets/vendor/boxicons/css/boxicons.min.css') }}" rel="stylesheet">
+  <link href="{{ asset('assets/vendor/quill/quill.snow.css') }}" rel="stylesheet">
+  <link href="{{ asset('assets/vendor/quill/quill.bubble.css') }}" rel="stylesheet">
+  <link href="{{ asset('assets/vendor/remixicon/remixicon.css') }}" rel="stylesheet">
+  <link href="{{ asset('assets/vendor/simple-datatables/style.css') }}" rel="stylesheet">
 
-        #wrapper {
-            flex: 1;
-            display: flex;
-            flex-direction: row;
-        }
+  <!-- Template Main CSS File -->
+  <link href="{{ asset('assets/css/style.css') }}" rel="stylesheet">
+  <!-- SweetAlert2 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-        #content-wrapper {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-        }
 
-        #content {
-            flex: 1;
-        }
 
-        footer {
-            background: white;
-        }
-    </style>
 </head>
 
-<body id="page-top">
+<body>
+  <!-- ======= Header ======= -->
+  <header id="header" class="header fixed-top d-flex align-items-center">
+    <div class="d-flex align-items-center justify-content-between">
+      <a href="index.html" class="logo d-flex align-items-center">
+        <img src="assets/img/logo.png" alt="">
+        <span class="d-none d-lg-block">LPKKSK UKDW</span>
+      </a>
+      <i class="bi bi-list toggle-sidebar-btn"></i>
+    </div><!-- End Logo -->
 
-    <!-- Wrapper: Sidebar + Main Content -->
-    <div id="wrapper">
-        <!-- Sidebar -->
-        <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
-            <a class="sidebar-brand d-flex align-items-center justify-content-center">
-                <div class="sidebar-brand-text mx-3">LPKKSK UKDW</div>
-            </a>
-            <hr class="sidebar-divider" />
-            <li class="nav-item">
-                @include('layout.sidebar')
-            </li>
-        </ul>
-        <!-- End of Sidebar -->
+    <nav class="header-nav ms-auto">
+      <ul class="d-flex align-items-center">
+        <li class="nav-item dropdown pe-3">
+          @include('layout.topbar')
+        </li><!-- End Profile Nav -->
+      </ul>
+    </nav><!-- End Icons Navigation -->
+  </header><!-- End Header -->
 
-        <!-- Main Content Area -->
-        <div id="content-wrapper">
-            <!-- Topbar -->
-            <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 shadow">
-                @include('layout.topbar')
-            </nav>
+  <!-- ======= Sidebar ======= -->
+  <aside id="sidebar" class="sidebar">
+      @include('layout.sidebar')
+    </ul>
+  </aside><!-- End Sidebar -->
 
-            <!-- Main Content -->
-            <div id="content">
-                <div class="container-fluid">
-                    @include('layout.content')
-                </div>
-            </div>
-            <!-- End Main Content -->
-
-            <!-- Footer -->
-            <footer class="py-3 shadow-sm">
-                <div class="container text-center">
-                    <span class="text-muted small">
-                        &copy; {{ now()->year }} Lembaga Pelayanan Kerohanian, Konseling, dan Spiritualitas Kampus
-                    </span>
-                </div>
-            </footer>
+  <!-- content -->
+  <main id="main" class="main">
+    <section class="section dashboard">
+      <div class="col-lg-12">
+        <div class="row">
+          @include('layout.content')
         </div>
-        <!-- End Content Wrapper -->
+      </div>
+    </section>
+  </main><!-- End #main -->
+
+  <!-- ======= Footer ======= -->
+  <footer id="footer" class="footer">
+    <div class="copyright">
+      &copy; {{ now()->year }} Lembaga Pelayanan Kerohanian, Konseling, dan Spiritualitas Kampus
     </div>
-    <!-- End Wrapper -->
+  </footer><!-- End Footer -->
 
-    <!-- Scroll to Top -->
-    <a class="scroll-to-top rounded" href="#page-top">
-        <i class="fas fa-angle-up"></i>
-    </a>
+  <!-- Vendor JS Files -->
+  <script src="{{ asset('assets/vendor/apexcharts/apexcharts.min.js') }}"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="{{ asset('assets/vendor/chart.js/chart.umd.js') }}"></script>
+  <script src="{{ asset('assets/vendor/echarts/echarts.min.js') }}"></script>
+  <script src="{{ asset('assets/vendor/quill/quill.js') }}"></script>
+  <script src="{{ asset('assets/vendor/simple-datatables/simple-datatables.js') }}"></script>
+  <script src="{{ asset('assets/vendor/tinymce/tinymce.min.js') }}"></script>
+  <script src="{{ asset('assets/vendor/php-email-form/validate.js') }}"></script>
 
-    <!-- Scripts -->
-    <script src="{{ asset('assets/vendor/jquery/jquery.min.js') }}"></script>
-    <script src="{{ asset('assets/vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
-    <script src="{{ asset('assets/vendor/jquery-easing/jquery.easing.min.js') }}"></script>
-    <script src="{{ asset('assets/js/sb-admin-2.min.js') }}"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-</body>
+  <!-- Template Main JS File -->
+  <script src="{{ asset('assets/js/main.js') }}"></script>
+
+<!-- Tambahkan jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- Tambahkan Bootstrap JS -->
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+
+
 </html>

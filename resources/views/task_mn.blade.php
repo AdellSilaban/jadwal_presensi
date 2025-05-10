@@ -1,27 +1,77 @@
 @extends('layout.main')
 
 @section('sidebar')
-<li class="nav-item">
-    <a class="nav-link collapsed" href="home_koor"><i class="fas fa-fw fa-home"></i>
-        <span>Home</span>
-    </a>
-</li>
+<ul class="sidebar-nav" id="sidebar-nav">
+    @auth
+        @php $jabatan = Auth::user()->jabatan; @endphp
 
-@auth
-    @if (Auth::user()->jabatan === 'Koordinator Divisi Creative')
+        <li class="nav-heading">Manajemen Volunteer</li>
         <li class="nav-item">
-            <a class="nav-link collapsed" href="task_mn"><i class="fas fa-list"></i>
-                <span>Task Management</span>
+            <a class="nav-link collapsed" href="home_koor">
+                <i class="bi bi-house-door"></i>
+                <span>Home</span>
             </a>
         </li>
-    @endif
-@endauth
 
-<li class="nav-item">
-    <a class="nav-link collapsed" href="validasi_task"><i class="fas fa-check"></i>
-        <span>Validasi Task</span>
-    </a>
-</li>
+        <li class="nav-item">
+            <a class="nav-link collapsed" href="sub_divisi">
+                <i class="bi bi-calendar-event"></i>
+                <span>Sub Divisi</span>
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a class="nav-link collapsed" href="jadwal_vlt">
+                <i class="bi bi-calendar-event"></i>
+                <span>Jadwal Volunteer</span>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link collapsed" href="data_presensi">
+                <i class="bi bi-database"></i>
+                <span>Data Presensi</span>
+            </a>
+        </li>
+
+        {{-- Tambahkan menu ini untuk semua koordinator --}}
+        <li class="nav-item">
+            <a class="nav-link collapsed" href="{{ route('formuploadSertif') }}">
+                <i class="bi bi-upload"></i>
+                <span>Upload Sertifikat</span>
+            </a>
+        </li>
+
+        @if ($jabatan === 'Koordinator Divisi Creative')
+            <li class="nav-heading">Manajemen Tugas</li>
+            <li class="nav-item">
+                <a class="nav-link collapsed" href="task_mn">
+                    <i class="bi bi-list-task"></i>
+                    <span>Manajemen Tugas</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link collapsed" href="validasi_task">
+                    <i class="bi bi-check-circle"></i>
+                    <span>Validasi Tugas</span>
+                </a>
+            </li>
+        @elseif ($jabatan === 'Koordinator Divisi Konseling')
+            <li class="nav-heading">Manajemen Tugas</li>
+            <li class="nav-item">
+                <a class="nav-link collapsed" href="task_mn">
+                    <i class="bi bi-list-task"></i>
+                    <span>Manajemen Tugas</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link collapsed" href="validasi_task">
+                    <i class="bi bi-check-circle"></i>
+                    <span>Validasi Tugas</span>
+                </a>
+            </li>
+        @endif
+    @endauth
+</ul>
 @endsection
 
 @section('content')
@@ -47,7 +97,7 @@
             <!-- Tombol Tambah Task -->
             <a href="/tambah_task" class="btn btn-primary shadow-sm px-3 py-1 rounded-pill d-flex align-items-center gap-2"
                style="font-size: 0.9rem;">
-                <i class="fas fa-plus fa-sm"></i> Tambah Task
+                <i class="bi bi-person-plus"></i> Tambah Task
             </a>
         </div>
 
@@ -60,6 +110,7 @@
                             <th style="text-align: center;">No</th>
                             <th style="text-align: center;">Deskripsi Tugas</th>
                             <th style="text-align: center;">Deadline</th>
+                            <th style="text-align: center;">Link Gdrive</th>
                             <th style="text-align: center;">Petugas</th>
                             <th style="text-align: center;">Aksi</th>
                         </tr>
@@ -68,8 +119,13 @@
                         @foreach ($tugas as $task)
                         <tr style="background-color: #f9f9f9;">
                             <th style="text-align: center; vertical-align: middle;">{{ $loop->iteration }}</th>
-                            <td style="vertical-align: middle;">{{ $task->desk_tgs }}</td>
+                            <td style="vertical-align: middle; vertical-align: middle;">{{ $task->desk_tgs }}</td>
                             <td style="text-align: center; vertical-align: middle;">{{ $task->deadline }}</td>
+                            <td>
+                                <a href="{{ $task->link_gdrive }}" target="_blank" class="text-decoration-none">
+                                    {{ Str::limit($task->link_gdrive, 40) }}  <!-- Menampilkan hanya sebagian link untuk kejelasan -->
+                                </a>
+                            </td>
                             <td style="vertical-align: middle;">
                                 @foreach ($task->volunteers as $volunteer)
                                     {{ $volunteer->nama }}<br>
@@ -77,7 +133,7 @@
                             </td>
                             <td style="text-align: center; vertical-align: middle;">
                                 <a href="{{ route('edit_task', $task->tugas_id) }}" class="btn btn-success btn-sm shadow">
-                                    <i class="fas fa-pen"></i> Edit
+                                    <i class="bi bi-pencil me-1"></i> Edit
                                 </a>
                                 <a href="{{ route('hapus_task', $task->tugas_id) }}" class="btn btn-danger btn-sm" onclick="confirmDelete(event, {{ $task->tugas_id }})">
                                     <i class="bi-trash"></i> Hapus
@@ -134,20 +190,49 @@
 @endsection
 
 @section('topbar')
-<ul class="navbar-nav ml-auto"> 
-    <li class="nav-item dropdown no-arrow">
-        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
-           data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-            <span class="mr-2 d-none d-lg-inline text-gray-600 small">{{ $user->nama }}</span>
+<nav class="header-nav ms-auto">
+    <ul class="d-flex align-items-center">
+      <li class="nav-item dropdown pe-3">
+
+        <a class="nav-link nav-profile d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown">
+            <span class="me-2 fw-semibold text-dark">{{ $user->nama }}</span>
+            <i class="bi bi-person-circle fs-4 text-primary"></i>
         </a>
-        <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in" 
-             aria-labelledby="userDropdown">
-            <div class="dropdown-divider"></div>
-            <a class="dropdown-item" href="/logout">
-                <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
-                Logout
+
+        <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
+          <li class="dropdown-header">
+            <h6>{{ $user->nama }}</h6>
+            <span>{{ $user->jabatan }}</span>
+          </li>
+
+          <li><hr class="dropdown-divider"></li>
+
+          <li>
+            <a class="dropdown-item d-flex align-items-center" href="/profile_koor">
+              <i class="bi bi-person"></i>
+              <span>Profile</span>
             </a>
-        </div>
-    </li>
-</ul>
+          </li>
+
+          <li>
+            <a class="dropdown-item d-flex align-items-center" href="/ubah_pass">
+              <i class="bi bi-key"></i>
+              <span>Reset Password</span>
+            </a>
+          </li>
+
+          <li><hr class="dropdown-divider"></li>
+
+          <li>
+            <a class="dropdown-item d-flex align-items-center" href="/logout">
+              <i class="bi bi-box-arrow-right"></i>
+              <span>Logout</span>
+            </a>
+          </li>
+        </ul><!-- End Profile Dropdown Items -->
+
+      </li><!-- End Profile Nav -->
+    </ul>
+</nav>
 @endsection
+

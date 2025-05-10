@@ -14,6 +14,7 @@ class presensi extends Model
         'jadwal_id',
         'vol_id',
         'check_in',
+        'desk_tgs',
         'check_out',
         'total_jam',
         'status',

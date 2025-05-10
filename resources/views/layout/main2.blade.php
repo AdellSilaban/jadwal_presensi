@@ -1,74 +1,106 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>VOLUNTEER LPKKSK UKDW</title>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
 
-    <!-- Fonts & Icons -->
-    <link href="{{ asset('assets/vendor/fontawesome-free/css/all.min.css') }}" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:200,300,400,700&display=swap" rel="stylesheet" />
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+  <title>LPKKSK UKDW</title>
+  <meta content="" name="description">
+  <meta content="" name="keywords">
 
-    <!-- Styles -->
-    <link href="{{ asset('assets/css/sb-admin-2.css') }}" rel="stylesheet" />
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+ <!-- Favicons -->
+<link href="{{ asset('assets/img/logo.png') }}" rel="icon">
+<link href="{{ asset('assets/img/apple-touch-icon.png') }}" rel="apple-touch-icon">
 
-    <!-- Bootstrap CSS -->
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<!-- Google Fonts -->
+<link href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Nunito:300,300i,400,400i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i" rel="stylesheet">
 
-<!-- Bootstrap JS (wajib yang ini untuk modal bisa berfungsi) -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Vendor CSS Files -->
+<link href="{{ asset('assets/vendor/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
+<link href="{{ asset('assets/vendor/bootstrap-icons/bootstrap-icons.css') }}" rel="stylesheet">
+<link href="{{ asset('assets/vendor/boxicons/css/boxicons.min.css') }}" rel="stylesheet">
+<link href="{{ asset('assets/vendor/quill/quill.snow.css') }}" rel="stylesheet">
+<link href="{{ asset('assets/vendor/quill/quill.bubble.css') }}" rel="stylesheet">
+<link href="{{ asset('assets/vendor/remixicon/remixicon.css') }}" rel="stylesheet">
+<link href="{{ asset('assets/vendor/simple-datatables/style.css') }}" rel="stylesheet">
+
+<!-- Template Main CSS File -->
+<link href="{{ asset('assets/css/style.css') }}" rel="stylesheet">
+
+<link href="{{ asset('assets/vendor/bootstrap-icons/bootstrap-icons.css') }}" rel="stylesheet">
+<meta name="csrf-token" content="{{ csrf_token() }}">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 
-    <!-- Optional Custom Style to handle footer -->
-    <style>
-        html, body {
-            height: 100%;
-        }
-
-        body {
-            display: flex;
-            flex-direction: column;
-        }
-
-        main {
-            flex: 1;
-        }
-
-        footer {
-            background: white;
-        }
-    </style>
 </head>
-<body id="page-top">
 
-    <!-- Topbar -->
-    <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
-        @include('layout.topbar')
-    </nav>
+<body class="sidebar-hidden">
 
-    <!-- Main Content -->
-    <main>
-        <div class="container-fluid">
-            @include('layout.content')
-        </div>
-    </main>
 
-    <!-- Footer -->
-    <footer class="py-3 shadow-sm mt-auto">
-        <div class="container text-center">
-            <span class="text-muted small">
-                &copy; {{ now()->year }} LPKKSK UKDW
-            </span>
-        </div>
-    </footer>
+  <!-- ======= Header ======= -->
+  <header id="header" class="header fixed-top d-flex align-items-center">
 
-    <!-- Scripts -->
-    <script src="{{ asset('assets/vendor/jquery/jquery.min.js') }}"></script>
-    <script src="{{ asset('assets/vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
-    <script src="{{ asset('assets/vendor/jquery-easing/jquery.easing.min.js') }}"></script>
-    <script src="{{ asset('assets/js/sb-admin-2.min.js') }}"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <div class="d-flex align-items-center justify-content-between">
+      <a href="index.html" class="logo d-flex align-items-center">
+        <img src="assets/img/logo.png" alt="">
+        <span class="d-none d-lg-block">LPKKSK UKDW</span>
+      </a>
+    </div><!-- End Logo -->
+
+    <nav class="header-nav ms-auto">
+      <ul class="d-flex align-items-center">
+
+
+        <li class="nav-item dropdown pe-3">
+            @include('layout.topbar')
+
+          </ul><!-- End Profile Dropdown Items -->
+        </li><!-- End Profile Nav -->
+
+      </ul>
+    </nav><!-- End Icons Navigation -->
+
+  </header><!-- End Header -->
+
+  
+        <!-- content -->
+        <main id="main" class="main">
+            <section class="section dashboard">
+                <div class="container-fluid d-flex justify-content-center">
+                    <div class="w-100" style="max-width: 1140px;">
+                   @include('layout.content')
+                    </div>
+                  </div>
+                  
+    </section>
+</main>
+
+  </main><!-- End #main -->
+
+<!-- ======= Footer ======= -->
+<footer class="footer-volunteer">
+    &copy; {{ now()->year }} Lembaga Pelayanan Kerohanian, Konseling, dan Spiritualitas Kampus
+  </footer>
+  
+  
+
+  <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
+<!-- Vendor JS Files -->
+<script src="{{ asset('assets/vendor/apexcharts/apexcharts.min.js') }}"></script>
+<script src="{{ asset('assets/vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+<script src="{{ asset('assets/vendor/chart.js/chart.umd.js') }}"></script>
+<script src="{{ asset('assets/vendor/echarts/echarts.min.js') }}"></script>
+<script src="{{ asset('assets/vendor/quill/quill.js') }}"></script>
+<script src="{{ asset('assets/vendor/simple-datatables/simple-datatables.js') }}"></script>
+<script src="{{ asset('assets/vendor/tinymce/tinymce.min.js') }}"></script>
+<script src="{{ asset('assets/vendor/php-email-form/validate.js') }}"></script>
+
+<!-- Template Main JS File -->
+<script src="{{ asset('assets/js/main.js') }}"></script>
+@yield('scripts')
+
 </body>
+
 </html>
