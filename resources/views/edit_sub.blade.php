@@ -9,7 +9,7 @@
         <li class="nav-item">
             <a class="nav-link collapsed" href="home_koor">
                 <i class="bi bi-house-door"></i>
-                <span>Home</span>
+                <span>Beranda</span>
             </a>
         </li>
 
@@ -80,7 +80,7 @@
     <div class="col-md-8 mx-auto">
         <div class="card shadow rounded">
             <div class="card-body">
-                <h5 class="card-title mb-4 text-center">Tambah Sub Divisi</h5>
+                <h5 class="card-title mb-4 text-center">Edit Sub Divisi</h5>
 
                 <form action="{{ route('update_sub', $subDiv->sub_divisi_id) }}" method="POST">
                     @csrf

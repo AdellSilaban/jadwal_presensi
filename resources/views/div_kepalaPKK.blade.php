@@ -1,6 +1,15 @@
 @extends('layout.main')
 
 @section('sidebar')
+
+<ul class="sidebar-nav" id="sidebar-nav">
+    <li class="nav-heading">Dashboard</li>
+    <li class="nav-item">
+    <a class="nav-link collapsed" href="dashboard"><i class="fas fa-users"></i>
+        <span>Dashboard</span>
+    </a>
+</li>
+
 <ul class="sidebar-nav" id="sidebar-nav">
     <li class="nav-heading">Volunteer</li>
     <li class="nav-item">
@@ -14,6 +23,14 @@
     <li class="nav-item">
     <a class="nav-link collapsed" href="div_kepalaPKK"><i class="fas fa-layer-group"></i>
         <span>Data Divisi</span>
+    </a>
+</li>
+
+<ul class="sidebar-nav" id="sidebar-nav">
+    <li class="nav-heading">Koordinator Divisi</li>
+    <li class="nav-item">
+    <a class="nav-link collapsed" href="koor_kepalaPKK"><i class="fas fa-users"></i>
+        <span>Data Koordinator</span>
     </a>
 </li>
 @endsection
@@ -61,7 +78,14 @@
                             <tr style="background-color: #f9f9f9;">
                                 <td class="text-center">{{ $loop->iteration }}</td>
                                 <td class="text-center">{{ $div->nama_divisi }}</td>
-                                <td class="text-center">{{ $div->desk_divisi }}</td>
+                                <td class="text-start">
+                                    <ul class="mb-0">
+                                        @foreach (explode("\n", $div->desk_divisi) as $poin)
+                                            <li>{{ ltrim($poin, '• ') }}</li>
+                                        @endforeach
+                                    </ul>
+                                </td>
+                                
                                 <td class="text-center">
                                     <a href="{{ route('edit_div', $div->divisi_id) }}" class="btn btn-success btn-sm shadow">
                                         <i class="bi bi-pencil me-1"></i> Edit
@@ -135,13 +159,6 @@
           </li>
 
           <li><hr class="dropdown-divider"></li>
-
-          <li>
-            <a class="dropdown-item d-flex align-items-center" href="/profile_koor">
-              <i class="bi bi-person"></i>
-              <span>Profile</span>
-            </a>
-          </li>
 
           <li>
             <a class="dropdown-item d-flex align-items-center" href="/ubah_pass">

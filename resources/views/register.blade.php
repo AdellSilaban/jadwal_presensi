@@ -68,6 +68,11 @@
           <i class="fas fa-user-plus me-2"></i> Daftar
         </button>
       </form>
+      @if (session('flash'))
+  <div class="alert alert-{{ session('flash_type', 'info') }} mt-3 small">
+    {{ session('flash') }}
+  </div>
+@endif
 
       @if ($errors->any())
         <div class="alert alert-danger mt-3 small">

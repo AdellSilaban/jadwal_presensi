@@ -10227,6 +10227,21 @@ a:focus {
   height: 4.375rem;
 }
 
+/* Topbar logo style */
+.topbar .logo img {
+  height: 36px;
+  width: auto;
+  object-fit: contain;
+}
+
+.topbar .logo span {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: #012970;
+}
+
+
+
 .topbar #sidebarToggleTop {
   height: 2.5rem;
   width: 2.5rem;
@@ -10402,21 +10417,24 @@ a:focus {
   color: #899bbd;
 }
 
-/* Sidebar brand/logo */
+/* Sidebar brand/logo tulisan */
 .sidebar .sidebar-brand {
-  font-size: 1.25rem;
-  font-weight: bold;
+  font-size: 1.4rem;           /* Ukuran font teks brand, disesuaikan */
+  font-weight: 600;            /* Tebal teks sedang (lebih elegan dari bold) */
   color: #012970;
   padding: 20px 20px 10px 20px;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;                   /* Jarak logo dan tulisan */
 }
+
 
 .sidebar .sidebar-brand i {
   font-size: 1.5rem;
   color: #4154f1;
 }
+
+
 
 /* Active state border indicator */
 .sidebar .nav-item.active {

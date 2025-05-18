@@ -9,7 +9,7 @@
         <li class="nav-item">
             <a class="nav-link collapsed" href="home_koor">
                 <i class="bi bi-house-door"></i>
-                <span>Home</span>
+                <span>Beranda</span>
             </a>
         </li>
 
@@ -135,8 +135,8 @@
                     </div>
                     
                     <div class="form-floating mb-3">
-                        <input type="no_rek_vlt" class="form-control" id="no_rek_vlt" name="no_rek_vlt" placeholder="Masukkan Bank dan Nomor Rekening Volunteer" required>
-                        <label for="no_rek_vlt">Bank & Rekening Volunteer</label>
+                        <input type="bank_no_rek" class="form-control" id="bank_no_rek" name="bank_no_rek" placeholder="Masukkan Bank dan Nomor Rekening Volunteer" required>
+                        <label for="bank_no_rek">Bank & Rekening Volunteer</label>
                     </div>
 
                     <div class="form-floating mb-3">

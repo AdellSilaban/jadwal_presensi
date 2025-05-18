@@ -73,7 +73,7 @@
         <p>Fakultas/Program Studi: {{ $volunteer->fakultas }} / {{ $volunteer->jurusan }}</p>
         <p>Bulan: {{ \Carbon\Carbon::parse($presensi->first()->tanggal)->format('F Y') }}</p>
         <p>Divisi: {{ $volunteer->divisi->nama_divisi }}</p>
-        <p>Bank/No Rekening: {{ $volunteer->no_rek_vlt}}</p>
+        <p>Bank/No Rekening: {{ $volunteer->bank_no_rek}}</p>
     </div>
 
     <table>

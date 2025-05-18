@@ -1,6 +1,15 @@
 @extends('layout.main')
 
 @section('sidebar')
+
+<ul class="sidebar-nav" id="sidebar-nav">
+    <li class="nav-heading">Dasboard</li>
+    <li class="nav-item">
+    <a class="nav-link collapsed" href="dashboard"><i class="fas fa-users"></i>
+        <span>Dashboard</span>
+    </a>
+</li>
+
 <ul class="sidebar-nav" id="sidebar-nav">
     <li class="nav-heading">Volunteer</li>
     <li class="nav-item">
@@ -16,7 +25,16 @@
         <span>Data Divisi</span>
     </a>
 </li>
+
+<ul class="sidebar-nav" id="sidebar-nav">
+    <li class="nav-heading">Koordinator Divisi</li>
+    <li class="nav-item">
+    <a class="nav-link collapsed" href="koor_kepalaPKK"><i class="fas fa-users"></i>
+        <span>Data Koordinator</span>
+    </a>
+</li>
 @endsection
+
 
 @section('content')
 
@@ -25,7 +43,6 @@
         <h1 class="h4 mb-1 text-gray-800">Data Volunteer</h1>
         <p style="font-size: 0.9rem;">Daftar seluruh volunteer dari berbagai divisi.</p>
         <br>
-
         <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
             <!-- Search Input -->
             <div class="flex-grow-1 me-3">
@@ -54,6 +71,7 @@
                             <th scope="col" class="text-center">Periode</th>
                             <th scope="col" class="text-center">Divisi</th>
                             <th scope="col" class="text-center">Sub Divisi</th>
+                            <th scope="col" class="text-center">Status</th>
                             <th scope="col" class="text-center">Status Etik</th>
                             <th scope="col" class="text-center text-nowrap">Aksi Divisi</th>
                             <th scope="col" class="text-center text-nowrap">Tindakan Etik</th>
@@ -75,7 +93,7 @@
                             </td>
                             <td class="text-center align-middle text-nowrap">{{ $vol->divisi ? $vol->divisi->nama_divisi : '-' }}</td>
                             <td class="text-center align-middle text-nowrap">{{ $vol->subDivisi->nama_subdivisi ?? '-' }}</td>
-
+                            <td class="text-center align-middle text-nowrap">{{ $vol->status }}</td>
                             <td class="align-middle text-center">
                                 @if ($vol->status_etik == 'normal')
                                     <span class="badge bg-success text-center">Normal</span>
@@ -244,7 +262,6 @@
     });
 </script>
 
-
 @endsection
 
 
@@ -265,13 +282,6 @@
           </li>
 
           <li><hr class="dropdown-divider"></li>
-
-          <li>
-            <a class="dropdown-item d-flex align-items-center" href="/profile_koor">
-              <i class="bi bi-person"></i>
-              <span>Profile</span>
-            </a>
-          </li>
 
           <li>
             <a class="dropdown-item d-flex align-items-center" href="/ubah_pass">

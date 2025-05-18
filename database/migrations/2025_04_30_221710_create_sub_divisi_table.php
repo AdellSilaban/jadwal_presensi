@@ -17,7 +17,7 @@ class CreateSubDivisiTable extends Migration
             $table->bigIncrements('sub_divisi_id');
             $table->unsignedBigInteger('divisi_id');
             $table->foreign('divisi_id')->references('divisi_id')->on('divisi')->onDelete('cascade');
-            $table->string('nama_subdivisi');
+            $table->string('nama_subdivisi',100 );
             $table->timestamps();
 
         });

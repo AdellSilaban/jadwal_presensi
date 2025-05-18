@@ -22,8 +22,7 @@ class CreatePresensiTable extends Migration
             $table->dateTime('check_in')->nullable();
             $table->dateTime('check_out')->nullable();
             $table->string('desk_tgs')->nullable();
-            $table->time('total_jam')->nullable();
-            $table->enum('status', ['Diproses', 'Diterima', 'Ditolak']);
+            $table->integer('total_jam')->nullable();
             $table->timestamps();
         });
     }

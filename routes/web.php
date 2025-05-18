@@ -1,19 +1,34 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
 
 // =================================
 // AUTHENTICATION ROUTES
 // =================================
-Route::get('/', 'authController@login')->middleware('guest');
+
+Route::get('/', function () {
+    return redirect('/login'); // atau dashboard default
+});
 
 
-Route::get('/register', 'authController@register');
-Route::post('/simpanRegis','authController@simpanRegis');
-Route::get('/login', 'authController@login')->name('login');
-Route::post('/ceklogin', 'authController@ceklogin');
+Route::middleware('guest')->group(function () {
+    Route::get('/login', 'authController@login')->name('login');
+    Route::post('/ceklogin', 'authController@ceklogin');
+
+    Route::get('/register', 'authController@register');
+    Route::post('/simpanRegis', 'authController@simpanRegis');
+
+
+});
+
+Route::middleware('guest:volunteer')->group(function () {
+    Route::get('/loginVol', 'vltController@loginVol')->name('loginVol');
+    Route::post('/cekloginVol', 'vltController@cekloginVol')->name('cekloginVol');
+});
 
 Route::middleware(['auth'])->group(function () {
+
 // Halaman form ubah password
 Route::get('/ubah_pass', 'authController@ubah_pass')->name('ubah_pass');
 
@@ -21,7 +36,6 @@ Route::get('/ubah_pass', 'authController@ubah_pass')->name('ubah_pass');
 Route::post('/update_pass', 'authController@update_pass')->name('update_pass');
 
 Route::get('/logout', 'authController@logout');
-Route::get('/logoutVol', 'vltController@logoutVol');
 
 });
 
@@ -39,10 +53,13 @@ Route::middleware(['auth:volunteer'])->group(function () {
     Route::post('/volunteer/tugas/{tugas_id}/simpan-peran', 'vltController@updatePeran')->name('simpan.peran');
     Route::get('/profile_vltCreative', 'vltController@profile_vltCreative');
     Route::post('/updateTaskStatus/{tugas_id}/{status}', 'vltController@updateTaskStatus')->name('updateTaskStatus');
+
+    Route::get('/logoutVol', 'vltController@logoutVol');
 });
 
-Route::get('/loginVol', 'vltController@loginVol')->name('loginVol');
-Route::post('/cekloginVol', 'vltController@cekloginVol')->name('cekloginVol');
+
+
+Route::get('/lihat_sertif', 'vltController@lihat_sertif')->name('lihat_sertif');
 
 // =================================
 // KOORDINATOR ROUTES
@@ -115,7 +132,10 @@ Route::middleware(['auth:web'])->group(function () {
 // =================================
 Route::middleware(['auth:web'])->group(function () {
     Route::get('/home_kepalaPKK', 'KPLController@home_kepalaPKK');
+    Route::get('/dashboard', 'KPLController@dashboard')->name('dashboard');
     Route::get('/div_kepalaPKK', 'KPLController@div_kepalaPKK');
+    Route::get('/koor_kepalaPKK', 'KPLController@koor_kepalaPKK');
+    Route::put('/nonaktifKoor/{id}', 'KPLController@nonaktifKoor')->name('nonaktifKoor');
     Route::get('/tambah_div', 'KPLController@tambah_div');
     Route::post('/simpanDiv', 'KPLController@simpanDiv');
     Route::get('/edit_div/{div_id}', 'KPLController@edit_div')->name('edit_div'); 

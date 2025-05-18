@@ -6,18 +6,17 @@
       <li class="nav-item dropdown pe-3">
 
         <a class="nav-link nav-profile d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown">
-          <img src="assets/img/profile-img.jpg" alt="Profile" class="rounded-circle">
-          <span class="d-none d-md-block dropdown-toggle ps-2">{{ $volunteer->nama }}</span>
-        </a><!-- End Profile Iamge Icon -->
+            <span class="me-2 fw-semibold text-dark">{{ $volunteer->nama }}</span>
+            <i class="bi bi-person-circle fs-4 text-primary"></i>
+        </a>
 
         <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
           <li class="dropdown-header">
             <h6>{{ $volunteer->nama }}</h6>
-            <span>Divisi {{ $volunteer->nama_divisi }}</span>
+            <span> Divisi {{ $volunteer->divisi->nama_divisi }}</span>
           </li>
-          <li>
-            <hr class="dropdown-divider">
-          </li>
+
+          <li><hr class="dropdown-divider"></li>
 
           <li>
             <a class="dropdown-item d-flex align-items-center" href="/profile_vlt">
@@ -25,9 +24,8 @@
               <span>Profile</span>
             </a>
           </li>
-          <li>
-            <hr class="dropdown-divider">
-          </li>
+
+          <li><hr class="dropdown-divider"></li>
 
           <li>
             <a class="dropdown-item d-flex align-items-center" href="/logoutVol">
@@ -35,12 +33,11 @@
               <span>Logout</span>
             </a>
           </li>
-
         </ul><!-- End Profile Dropdown Items -->
-      </li><!-- End Profile Nav -->
 
+      </li><!-- End Profile Nav -->
     </ul>
-  </nav><!-- End Icons Navigation -->
+</nav>
 @endsection
 
 @section('content')
@@ -306,7 +303,6 @@ document.addEventListener('DOMContentLoaded', function () {
   });
   </script>
   
-  </script>
   
   
 @endsection  

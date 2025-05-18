@@ -14,7 +14,7 @@ class CreateTugasVolunteerTable extends Migration
     public function up()
     {
         Schema::create('tugas_volunteer', function (Blueprint $table) {
-            $table->id();
+            $table->bigIncrements('tugas_vol_id');
             $table->unsignedBigInteger('tugas_id');
             $table->foreign('tugas_id')->references('tugas_id')->on('tugas')->onDelete('cascade');
             $table->unsignedBigInteger('vol_id');

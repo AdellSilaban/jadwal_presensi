@@ -18,10 +18,16 @@
   <!-- Custom CSS -->
   <link href="{{ asset('assets/css/login.css') }}" rel="stylesheet">
 </head>
-
 <body>
   <div class="d-flex justify-content-center align-items-center vh-100">
     <div class="card card-login shadow p-4">
+          @if (session('error'))
+    <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
+        {{ session('error') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+@endif
+
       <div class="text-center mb-4">
         <img src="{{ asset('assets/img/logo.png') }}" alt="Logo LPKKSK" class="logo mb-2">
         <h5 class="fw-bold mb-0">LPKKSK UKDW</h5>

@@ -6,6 +6,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Login</title>
 
+  <!-- Favicons -->
+  <link href="{{ asset('assets/img/logo.png') }}" rel="icon">
+
   <!-- Font -->
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;600&display=swap" rel="stylesheet">
 
@@ -17,6 +20,7 @@
 
   <!-- Custom CSS -->
   <link href="{{ asset('assets/css/login.css') }}" rel="stylesheet">
+  
 </head>
 
 <body>

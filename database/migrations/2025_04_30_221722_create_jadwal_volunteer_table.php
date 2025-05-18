@@ -14,7 +14,7 @@ class CreateJadwalVolunteerTable extends Migration
     public function up()
     {
         Schema::create('jadwal_volunteer', function (Blueprint $table) {
-            $table->id();
+            $table->bigIncrements('jadwal_vol_id');
             $table->unsignedBigInteger('jadwal_id');
             $table->foreign('jadwal_id')->references('jadwal_id')->on('jadwal')->onDelete('cascade');
             $table->unsignedBigInteger('vol_id');

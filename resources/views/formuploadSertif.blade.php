@@ -9,31 +9,35 @@
         <li class="nav-item">
             <a class="nav-link collapsed" href="home_koor">
                 <i class="bi bi-house-door"></i>
-                <span>Home</span>
+                <span>Beranda</span>
             </a>
         </li>
 
-        <li class="nav-item">
-            <a class="nav-link collapsed" href="sub_divisi">
-                <i class="bi bi-calendar-event"></i>
-                <span>Sub Divisi</span>
-            </a>
-        </li>
+        {{-- Tampilkan menu ini hanya jika bukan Koordinator Konseling --}}
+        @if ($jabatan !== 'Koordinator Divisi Konseling')
+            <li class="nav-item">
+                <a class="nav-link collapsed" href="sub_divisi">
+                    <i class="bi bi-calendar-event"></i>
+                    <span>Sub Divisi</span>
+                </a>
+            </li>
 
-        <li class="nav-item">
-            <a class="nav-link collapsed" href="jadwal_vlt">
-                <i class="bi bi-calendar-event"></i>
-                <span>Jadwal Volunteer</span>
-            </a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link collapsed" href="data_presensi">
-                <i class="bi bi-database"></i>
-                <span>Data Presensi</span>
-            </a>
-        </li>
+            <li class="nav-item">
+                <a class="nav-link collapsed" href="jadwal_vlt">
+                    <i class="bi bi-calendar-event"></i>
+                    <span>Jadwal Volunteer</span>
+                </a>
+            </li>
 
-        {{-- Tambahkan menu ini untuk semua koordinator --}}
+            <li class="nav-item">
+                <a class="nav-link collapsed" href="data_presensi">
+                    <i class="bi bi-database"></i>
+                    <span>Data Presensi</span>
+                </a>
+            </li>
+        @endif
+
+        {{-- Menu Upload Sertifikat tetap ditampilkan --}}
         <li class="nav-item">
             <a class="nav-link collapsed" href="{{ route('formuploadSertif') }}">
                 <i class="bi bi-upload"></i>
@@ -41,21 +45,8 @@
             </a>
         </li>
 
-        @if ($jabatan === 'Koordinator Divisi Creative')
-            <li class="nav-heading">Manajemen Tugas</li>
-            <li class="nav-item">
-                <a class="nav-link collapsed" href="task_mn">
-                    <i class="bi bi-list-task"></i>
-                    <span>Manajemen Tugas</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link collapsed" href="validasi_task">
-                    <i class="bi bi-check-circle"></i>
-                    <span>Validasi Tugas</span>
-                </a>
-            </li>
-        @elseif ($jabatan === 'Koordinator Divisi Konseling')
+        {{-- Menu Manajemen Tugas untuk Koordinator --}}
+        @if ($jabatan === 'Koordinator Divisi Creative' || $jabatan === 'Koordinator Divisi Konseling')
             <li class="nav-heading">Manajemen Tugas</li>
             <li class="nav-item">
                 <a class="nav-link collapsed" href="task_mn">

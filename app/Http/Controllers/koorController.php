@@ -87,7 +87,7 @@ public function home_koor()
         'nim' => 'required|unique:volunteer,nim',
         'fakultas' => 'required',
         'jurusan' => 'required',
-        'no_rek_vlt' => 'required',
+        'bank_no_rek' => 'required',
         'email' => 'required|email|unique:volunteer,email',
         'mulai_aktif' => 'required|date',
         'akhir_aktif' => 'required|date|after_or_equal:mulai_aktif',
@@ -106,7 +106,7 @@ public function home_koor()
         'nim'=> $request->nim,
         'fakultas'=> $request->fakultas,
         'jurusan'=> $request->jurusan,
-        'no_rek_vlt'=> $request->no_rek_vlt,
+        'bank_no_rek'=> $request->bank_no_rek,
         'email'=> $request->email,
         'mulai_aktif'=> $request->mulai_aktif,
         'akhir_aktif'=> $request->akhir_aktif,
@@ -124,7 +124,15 @@ public function home_koor()
         public function edit_vlt($vol_id, Request $request){
             $user = Auth::user();
             $volunteer = volunteer::find($vol_id);
-            return view('edit_vlt', compact('volunteer', 'user'));
+                // Cek apakah divisi ditemukan untuk user
+    $divisi = divisi::where('divisi_id', $user->divisi_id)->first();
+
+    // Pastikan divisi ditemukan, jika tidak beri pesan error
+    if (!$divisi) {
+        return redirect()->route('home_koor')->with('error', 'Divisi tidak ditemukan');
+    }
+            $subDivisi = SubDivisi::where('divisi_id', $divisi->divisi_id)->get();
+            return view('edit_vlt', compact('volunteer', 'user', 'subDivisi', 'divisi'));
         }
 
         public function updateVlt(Request $request, $vol_id) { 
@@ -137,6 +145,7 @@ public function home_koor()
                 'jurusan' => $request->jurusan,
                 'mulai_aktif'=> $request->mulai_aktif,
                 'akhir_aktif'=> $request->akhir_aktif,
+                'sub_divisi_id'=> $request->sub_divisi_id,
             ]);
         
             return redirect('/home_koor')->with('success', 'Data volunteer berhasil diupdate!'); // Redirect dengan pesan sukses
@@ -156,10 +165,16 @@ public function home_koor()
 // Halaman Jadwal Volunteer
 public function jadwal_vlt() {
     $user = Auth::user(); 
-    $jadwal = jadwal::with(['volunteers', 'divisi'])->get();
-   // dd($jadwal);
+    
+    $jadwal = jadwal::with(['volunteers', 'divisi'])
+        ->whereHas('divisi', function ($q) use ($user) {
+            $q->where('nama_divisi', $user->divisi->nama_divisi);
+        })
+        ->get();
+
     return view('jadwal_vlt', compact('jadwal', 'user'));
 }
+
 
 public function tambah_jadwal()
 {
@@ -269,54 +284,94 @@ public function reset_now(Request $request, $token): View
 
 //Data  Presensi
 public function data_presensi() {
-    // Menyaring volunteer berdasarkan sub divisi, kecuali Desain
-    $volunteers = Volunteer::whereHas('subDivisi', function ($query) {
-        $query->where('nama_subdivisi', '!=', 'Desain');  // Jangan tampilkan sub divisi Desain
-    })->get();
-
-    // Variabel filterApplied yang digunakan untuk memberitahu apakah filter diterapkan
+    $user = Auth::user(); // Koordinator login
     $filterApplied = false;
 
-    // Jika ada parameter filter yang diterapkan (contoh filter berdasarkan sub-divisi)
-    if (request()->has('filter')) {
-        $filterApplied = true; // Menandakan bahwa filter sudah diterapkan
-        $volunteers = $volunteers->filter(function($volunteer) {
-            return $volunteer->subDivisi->nama_subdivisi != 'Desain'; // Cek filter
+    // Ambil volunteer berdasarkan:
+    // - divisi sesuai koordinator
+    // - kalau divisi Creative, filter juga berdasarkan sub divisi
+    $volunteers = volunteer::whereHas('divisi', function ($query) use ($user) {
+        $query->where('divisi_id', $user->divisi_id);
+    });
+
+    // Jika divisi Creative → filter juga berdasarkan sub divisi (misalnya hanya "Desain")
+    if ($user->divisi->nama_divisi === 'Creative') {
+        $volunteers = $volunteers->whereHas('subDivisi', function ($query) use ($user) {
+            // Diasumsikan nama_subdivisi pada user digunakan sebagai patokan filter
+            $query->where('nama_subdivisi', $user->subDivisi->nama_subdivisi ?? 'PKK Live');
+        });
+    } else {
+        // Untuk divisi lain, tetap tolak sub divisi "Desain"
+        $volunteers = $volunteers->whereHas('subDivisi', function ($query) {
+            $query->where('nama_subdivisi', '!=', 'PKK Live');
         });
     }
 
-    $presensi = presensi::with('volunteer')->get();
-    $user = Auth::user();
+    $volunteers = $volunteers->get();
 
-    $totalHours = 0; // Total jam dalam hitungan jam penuh
+    // Jika ada filter manual di request
+    if (request()->has('filter')) {
+        $filterApplied = true;
 
+        $volunteers = $volunteers->filter(function ($volunteer) use ($user) {
+            if ($user->divisi->nama_divisi === 'Creative') {
+                return $volunteer->subDivisi->nama_subdivisi === ($user->subDivisi->nama_subdivisi ?? 'PKK Live');
+            } else {
+                return $volunteer->subDivisi->nama_subdivisi !== 'PKK Live';
+            }
+        });
+    }
+
+    // Filter presensi hanya milik volunteer yang sesuai
+    $presensi = presensi::with('volunteer')->whereHas('volunteer', function ($query) use ($user) {
+        $query->whereHas('divisi', function ($q) use ($user) {
+            $q->where('divisi_id', $user->divisi_id);
+        });
+
+        if ($user->divisi->nama_divisi === 'Creative') {
+            $query->whereHas('subDivisi', function ($q) use ($user) {
+                $q->where('nama_subdivisi', $user->subDivisi->nama_subdivisi ?? 'PKK Live');
+            });
+        } else {
+            $query->whereHas('subDivisi', function ($q) {
+                $q->where('nama_subdivisi', '!=', 'PKK Live');
+            });
+        }
+    })->get();
+
+    // Ambil ID volunteer dari dropdown (jika dipilih)
+$volunteerId = request()->input('vol_id');
+
+    // Hitung total jam
+    $totalHours = 0;
+
+if ($volunteerId) {
+    $presensi = presensi::where('vol_id', $volunteerId)->get();
+    $filterApplied = true;
+
+    // Hitung total jam kerja hanya jika volunteer dipilih
     foreach ($presensi as $p) {
         if ($p->check_in && $p->check_out) {
             $checkIn = \Carbon\Carbon::parse($p->check_in);
             $checkOut = \Carbon\Carbon::parse($p->check_out);
-
-            // Hitung durasi dalam detik
-            $durationInSeconds = $checkIn->diffInSeconds($checkOut);
-
-            // Hitung jam penuh dari durasi detik
-            $durationInHours = floor($durationInSeconds / 3600); // Buang menit dan detik
-
-            $totalHours += $durationInHours; // Tambahkan jam penuh ke total
+            $durationInHours = floor($checkIn->diffInSeconds($checkOut) / 3600);
+            $totalHours += $durationInHours;
         }
     }
+}
 
-    // Kirim data ke view termasuk $filterApplied untuk pengecekan filter
+
     return view('data_presensi', compact('presensi', 'user', 'totalHours', 'volunteers', 'filterApplied'));
 }
 
 
 
-// Controller untuk meng-handle filter
+
 public function filterPresensi(Request $request)
 {
+    $user = Auth::user();
     $volunteerId = $request->input('vol_id');
     
-    // Tentukan apakah filter sudah diterapkan
     $filterApplied = false;
     $presensi = [];
 
@@ -326,27 +381,42 @@ public function filterPresensi(Request $request)
         $filterApplied = true;
     }
 
-    $volunteers = volunteer::whereHas('subDivisi', function ($query) {
-        $query->where('nama_subdivisi', '!=', 'Desain');
-    })->get();
+    // Ambil daftar volunteer sesuai divisi user login
+    $volunteers = volunteer::whereHas('divisi', function ($query) use ($user) {
+        $query->where('divisi_id', $user->divisi_id);
+    });
+
+    // Tambahan filter jika divisi-nya adalah Creative
+    if ($user->divisi->nama_divisi === 'Creative') {
+        $volunteers = $volunteers->whereHas('subDivisi', function ($query) use ($user) {
+            $query->where('nama_subdivisi', $user->subDivisi->nama_subdivisi ?? 'PKK Live');
+        });
+    } else {
+        // Untuk divisi non-Creative, tetap hindari sub divisi Desain
+        $volunteers = $volunteers->whereHas('subDivisi', function ($query) {
+            $query->where('nama_subdivisi', '!=', 'PKK Live');
+        });
+    }
+
+    $volunteers = $volunteers->get();
 
     // Total Jam
-    $totalHours = 0; // Total jam dalam hitungan jam penuh
+    $totalHours = 0;
     foreach ($presensi as $p) {
         if ($p->check_in && $p->check_out) {
             $checkIn = \Carbon\Carbon::parse($p->check_in);
             $checkOut = \Carbon\Carbon::parse($p->check_out);
 
-            // Hitung durasi dalam detik
             $durationInSeconds = $checkIn->diffInSeconds($checkOut);
-            $durationInHours = floor($durationInSeconds / 3600); // Jam penuh
+            $durationInHours = floor($durationInSeconds / 3600);
 
-            $totalHours += $durationInHours; // Tambahkan jam ke total
+            $totalHours += $durationInHours;
         }
     }
 
-    return view('data_presensi', compact('presensi', 'volunteers', 'totalHours', 'filterApplied'));
+    return view('data_presensi', compact('user', 'presensi', 'volunteers', 'totalHours', 'filterApplied'));
 }
+
 
 
 
@@ -721,13 +791,6 @@ public function validasi_task(Request $request)
 }
 
 
-
-
-
-
-
-
-
 public function submit(Request $request)
 {
     $request->validate([
@@ -737,17 +800,29 @@ public function submit(Request $request)
         'revisi_catatan' => 'nullable|string',
     ]);
 
+    // Siapkan data dasar
+    $dataUpdate = [
+        'status_validasi' => $request->status_validasi,
+        'revisi_catatan' => $request->status_validasi === 'Revisi' ? $request->revisi_catatan : null,
+        'updated_at' => now(),
+    ];
+
+    // Ubah status sesuai validasi
+    if ($request->status_validasi === 'Revisi') {
+        $dataUpdate['status'] = 'Sedang Dikerjakan';
+    } elseif ($request->status_validasi === 'Selesai') {
+        $dataUpdate['status'] = 'Tugas Selesai';
+    }
+
     DB::table('tugas_volunteer')
         ->where('tugas_id', $request->tugas_id)
         ->where('vol_id', $request->vol_id)
-        ->update([
-            'status_validasi' => $request->status_validasi,
-            'revisi_catatan' => $request->status_validasi === 'Revisi' ? $request->revisi_catatan : null,
-            'updated_at' => now(),
-        ]);
+        ->update($dataUpdate);
 
     return redirect()->back()->with('success', 'Status validasi berhasil diperbarui.');
 }
+
+
 
 public function formuploadSertif()
 {
@@ -758,7 +833,7 @@ public function formuploadSertif()
 public function uploadSertif(Request $request)
 {
     $request->validate([
-        'periode_ke' => 'required|integer',
+        'periode_ke' => 'required|integer|min:1|max:4',
         'files.*' => 'required|file|mimes:pdf|max:2048',
     ]);
 
@@ -774,24 +849,36 @@ public function uploadSertif(Request $request)
         $volunteer = volunteer::where('nim', $filename)->first();
 
         if ($volunteer) {
-            // Hitung semester aktif (1 semester = 6 bulan)
-            $mulai = Carbon::parse($volunteer->mulai_aktif);
-            $akhir = Carbon::parse($volunteer->akhir_aktif);
-            $totalSemester = floor($mulai->diffInMonths($akhir) / 6);
+            // Hitung total semester aktif (gunakan ceil agar volunteer pertengahan semester dihitung)
+            $mulai = \Carbon\Carbon::parse($volunteer->mulai_aktif);
+            $akhir = \Carbon\Carbon::parse($volunteer->akhir_aktif);
+            $totalSemester = ceil($mulai->diffInMonths($akhir) / 6);
+            $periodeMax = floor($totalSemester / 2); // 1 periode = 2 semester
 
-            if ($periode <= $totalSemester) {
-                $path = $file->store('sertif', 'public');
+            if ($periode <= $periodeMax) {
+                // Cek apakah sudah pernah upload di periode ini
+                $sudahAda = sertif::where('vol_id', $volunteer->vol_id)
+                    ->where('periode_ke', $periode)
+                    ->exists();
 
-                sertif::create([
-                    'vol_id' => $volunteer->vol_id,
-                    'periode_ke' => $periode,
-                    'file_sertifikat' => $path,
-                ]);
+                if (!$sudahAda) {
+                    $path = $file->store('sertif', 'public');
 
-                $berhasil++;
+                    sertif::create([
+                        'vol_id' => $volunteer->vol_id,
+                        'periode_ke' => $periode,
+                        'file_sertifikat' => $path,
+                    ]);
+
+                    $berhasil++;
+                } else {
+                    $ditolak[] = "$filename (sudah upload di periode ke-$periode)";
+                }
+
             } else {
-                $ditolak[] = $filename;
+                $ditolak[] = "$filename (aktif $totalSemester semester → belum memenuhi periode ke-$periode)";
             }
+
         } else {
             $gagal++;
         }
@@ -802,18 +889,10 @@ public function uploadSertif(Request $request)
     if ($gagal > 0) $message .= " $gagal gagal dikenali (NIM tidak ditemukan).";
     if (count($ditolak) > 0) {
         $list = implode(', ', $ditolak);
-        $message .= " File ditolak untuk NIM: $list karena belum memenuhi $periode semester.";
+        $message .= " File ditolak untuk: $list.";
     }
 
     return redirect()->back()->with('success', $message);
 }
 
-
-
-
-
 }
-
-
-
-

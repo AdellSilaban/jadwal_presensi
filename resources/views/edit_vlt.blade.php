@@ -9,7 +9,7 @@
         <li class="nav-item">
             <a class="nav-link collapsed" href="home_koor">
                 <i class="bi bi-house-door"></i>
-                <span>Home</span>
+                <span>Beranda</span>
             </a>
         </li>
 
@@ -123,8 +123,8 @@
                     </div>
 
                     <div class="form-floating mb-3">
-                        <input type="no_rek_vlt" class="form-control" id="no_rek_vlt" name="no_rek_vlt" value="{{ $volunteer->no_rek_vlt }}">
-                        <label for="no_rek_vlt">Bank & Rekening Volunteer</label>
+                        <input type="bank_no_rek" class="form-control" id="bank_no_rek" name="bank_no_rek" value="{{ $volunteer->bank_no_rek }}">
+                        <label for="bank_no_rek">Bank & Rekening Volunteer</label>
                     </div>
                     
 
@@ -137,6 +137,23 @@
                         <input type="date" class="form-control" id="akhir_aktif" name="akhir_aktif" value="{{ $volunteer->akhir_aktif }}">
                         <label for="akhir_aktif">Akhir Masa Aktif</label>
                     </div>
+
+                    @if(in_array(Auth::user()->divisi->nama_divisi, ['Creative', 'Tim Ibadah Kampus']))
+                    <div class="mb-3">
+                        <select class="form-select" id="sub_divisi_id" name="sub_divisi_id">
+                            <option value="">Pilih Sub Divisi</option>
+                            @foreach ($subDivisi as $sub)
+                                <option value="{{ $sub->sub_divisi_id }}" 
+                                    {{ old('sub_divisi_id', $volunteer->sub_divisi_id ?? '') == $sub->sub_divisi_id ? 'selected' : '' }}>
+                                    {{ $sub->nama_subdivisi }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                    @endif
+                    
+
+
                     <br>
                     <div class="d-flex justify-content-end gap-2">
                         <a href="/home_koor" class="btn btn-secondary">Kembali</a>

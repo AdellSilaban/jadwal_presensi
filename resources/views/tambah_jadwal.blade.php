@@ -9,7 +9,7 @@
         <li class="nav-item">
             <a class="nav-link collapsed" href="home_koor">
                 <i class="bi bi-house-door"></i>
-                <span>Home</span>
+                <span>Beranda</span>
             </a>
         </li>
 
@@ -81,7 +81,7 @@
     <div class="col-md-8 mx-auto">
         <div class="card shadow rounded">
             <div class="card-body">
-                <h5 class="card-title mb-4 text-center">Edit Data Volunteer</h5>
+                <h5 class="card-title mb-4 text-center">Tambah Jadwal</h5>
                 <form action="/simpanjadwal" method="POST">
                     @csrf
 

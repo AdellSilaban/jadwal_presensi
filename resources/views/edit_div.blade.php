@@ -1,15 +1,36 @@
 @extends('layout.main')
 
 @section('sidebar')
-<li class="nav-item">
+
+<ul class="sidebar-nav" id="sidebar-nav">
+    <li class="nav-heading">Dashboard</li>
+    <li class="nav-item">
+    <a class="nav-link collapsed" href="dasboard"><i class="fas fa-users"></i>
+        <span>Dashboard</span>
+    </a>
+</li>
+
+<ul class="sidebar-nav" id="sidebar-nav">
+    <li class="nav-heading">Volunteer</li>
+    <li class="nav-item">
     <a class="nav-link collapsed" href="home_kepalaPKK"><i class="fas fa-users"></i>
         <span>Data Volunteer</span>
     </a>
 </li>
 
-<li class="nav-item">
+<ul class="sidebar-nav" id="sidebar-nav">
+    <li class="nav-heading">Divisi</li>
+    <li class="nav-item">
     <a class="nav-link collapsed" href="div_kepalaPKK"><i class="fas fa-layer-group"></i>
         <span>Data Divisi</span>
+    </a>
+</li>
+
+<ul class="sidebar-nav" id="sidebar-nav">
+    <li class="nav-heading">Koordinator Divisi</li>
+    <li class="nav-item">
+    <a class="nav-link collapsed" href="koor_kepalaPKK"><i class="fas fa-users"></i>
+        <span>Data Koordinator</span>
     </a>
 </li>
 @endsection
@@ -31,11 +52,19 @@
                         <label for="nama_divisi">Nama Divisi</label>
                     </div>
 
-                    <div class="form-floating mb-3">
-                        <textarea class="form-control" id="desk_divisi" name="desk_divisi" 
-                                  style="height: 100px" placeholder="Masukkan deskripsi divisi">{{ $divisi->desk_divisi }}</textarea>
-                        <label for="desk_divisi">Deskripsi Divisi</label>
+                    <div id="poin-container">
+                        <label class="form-label">Deskripsi Divisi (per poin):</label>
+                    
+                        @foreach (explode("\n", $divisi->desk_divisi) as $poin)
+                            <div class="input-group mb-2">
+                                <span class="input-group-text">•</span>
+                                <input type="text" name="desk_divisi[]" class="form-control" value="{{ ltrim($poin, '• ') }}">
+                            </div>
+                        @endforeach
                     </div>
+                    
+                    <button type="button" class="btn btn-sm btn-outline-primary mb-3" onclick="tambahPoin()">+ Tambah Poin</button>
+                    
 
                     <div class="d-flex justify-content-end gap-2">
                         <a href="/div_kepalaPKK" class="btn btn-secondary">Kembali</a>
@@ -47,6 +76,20 @@
         </div>
     </div>
 </div>
+
+<script>
+    function tambahPoin() {
+        const container = document.getElementById('poin-container');
+        const inputGroup = document.createElement('div');
+        inputGroup.className = 'input-group mb-2';
+        inputGroup.innerHTML = `
+            <span class="input-group-text">•</span>
+            <input type="text" name="desk_divisi[]" class="form-control" placeholder="Tulis poin...">
+        `;
+        container.appendChild(inputGroup);
+    }
+</script>
+
 @endsection
 
 @section('topbar')
@@ -66,13 +109,6 @@
           </li>
 
           <li><hr class="dropdown-divider"></li>
-
-          <li>
-            <a class="dropdown-item d-flex align-items-center" href="/profile_koor">
-              <i class="bi bi-person"></i>
-              <span>Profile</span>
-            </a>
-          </li>
 
           <li>
             <a class="dropdown-item d-flex align-items-center" href="/ubah_pass">

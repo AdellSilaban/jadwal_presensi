@@ -9,6 +9,7 @@ use App\volunteer;
 use App\jadwal;
 use App\presensi;
 use App\tugas;
+use App\sertif;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Hash; // Tambahkan baris ini
 use Illuminate\View\View;
@@ -45,49 +46,82 @@ class vltController extends Controller
      }
 
 
+    //  public function cekloginVol(Request $request)
+    //  {
+    //      $datalogin = [
+    //          'email' => $request->email,
+    //          'password' => $request->password,
+    //      ];
+     
+    //      Log::info('Data login yang diterima:', $datalogin);
+     
+    //      if (Auth::guard('volunteer')->attempt($datalogin)) {
+    //          $volunteer = Auth::guard('volunteer')->user()->load('subDivisi', 'divisi');
+     
+    //          Log::info('Login volunteer berhasil untuk user dengan ID:', [$volunteer->vol_id]);
+    //          Log::info('Data volunteer:', [$volunteer]);
+     
+    //          $divisi = $volunteer->divisi->nama_divisi ?? '';
+    //          $subDivisi = $volunteer->subDivisi->nama_subdivisi ?? null;
+     
+    //          Log::info('Divisi:', [$divisi]);
+    //          Log::info('Sub Divisi:', [$subDivisi]);
+     
+    //          // Routing logika berdasarkan divisi & sub divisi
+    //          if ($divisi === 'Creative') {
+    //              Log::info('Divisi Creative terdeteksi.');
+    //              if ($subDivisi === 'Desain') {
+    //                  return redirect('/home_vltcreative');
+    //              } elseif ($subDivisi === 'PKK Live') {
+    //                  return redirect('/home_vlt');
+    //              } else {
+    //                  return redirect('/home_vlt');
+    //              }
+    //          } elseif ($divisi === 'Konseling') {
+    //              Log::info('Divisi Konseling terdeteksi.');
+    //              return redirect()('/home_vltcreative');
+    //          } else {
+    //              return redirect('/home_vlt');
+    //          }
+    //      } else {
+    //         return back()->with('error', 'Email atau password salah.');
+    //      }
+    //  }
+     
      public function cekloginVol(Request $request)
-     {
-         $datalogin = [
-             'email' => $request->email,
-             'password' => $request->password,
-         ];
-     
-         Log::info('Data login yang diterima:', $datalogin);
-     
-         if (Auth::guard('volunteer')->attempt($datalogin)) {
-             $volunteer = Auth::guard('volunteer')->user()->load('subDivisi', 'divisi');
-     
-             Log::info('Login volunteer berhasil untuk user dengan ID:', [$volunteer->vol_id]);
-             Log::info('Data volunteer:', [$volunteer]);
-     
-             $divisi = $volunteer->divisi->nama_divisi ?? '';
-             $subDivisi = $volunteer->subDivisi->nama_subdivisi ?? null;
-     
-             Log::info('Divisi:', [$divisi]);
-             Log::info('Sub Divisi:', [$subDivisi]);
-     
-             // Routing logika berdasarkan divisi & sub divisi
-             if ($divisi === 'Creative') {
-                 Log::info('Divisi Creative terdeteksi.');
-                 if ($subDivisi === 'Desain') {
-                     return redirect('/home_vltcreative');
-                 } elseif ($subDivisi === 'PKK Live') {
-                     return redirect('/home_vlt');
-                 } else {
-                     return redirect('/home_vlt')->with('warning', 'Sub divisi tidak dikenali.');
-                 }
-             } elseif ($divisi === 'Konseling') {
-                 Log::info('Divisi Konseling terdeteksi.');
-                 return redirect('/home_vltcreative');
-             } else {
-                 return redirect('/home_vlt')->with('error', 'Divisi tidak dikenali.');
-             }
-         } else {
-             return redirect('/loginVol')->with('error', 'Email atau password salah.');
-         }
-     }
-     
-     
+{
+    $credentials = $request->only('email', 'password');
+    
+
+    if (Auth::guard('volunteer')->attempt($credentials)) {
+        $volunteer = Auth::guard('volunteer')->user()->load('subDivisi', 'divisi');
+
+      // Cek status etik
+        if ($volunteer->status_etik === 'dihentikan') {
+            Auth::guard('volunteer')->logout(); // logout manual
+            return back()->with('error', 'Anda telah dihentikan dan tidak dapat login.');
+        }
+
+        $divisi = $volunteer->divisi->nama_divisi ?? '';
+        $subDivisi = $volunteer->subDivisi->nama_subdivisi ?? '';
+
+        if ($divisi === 'Creative') {
+            if ($subDivisi === 'Desain') {
+                return redirect('/home_vltcreative');
+            }
+            return redirect('/home_vlt'); // default untuk PKK Live atau lainnya
+        }
+
+        if ($divisi === 'Konseling') {
+            return redirect('/home_vltcreative');
+        }
+
+        return redirect('/home_vlt'); // fallback volunteer lainnya
+    }
+
+    return back()->with('error', 'Email atau password salah.');
+}
+
      
      
      
@@ -101,6 +135,9 @@ class vltController extends Controller
 public function home_vlt()
 {
     $volunteer = Auth::guard('volunteer')->user();
+
+    $divisi = $volunteer->divisi; // ambil data divisi dari relasi
+
 
     // Ambil semua jadwal yang berelasi dengan volunteer ini
     $jadwals = $volunteer->jadwals;
@@ -130,7 +167,7 @@ public function home_vlt()
         $jadwal->canCheckIn = $jadwal->is_today && $now->greaterThanOrEqualTo($jamBuka);
     }
 
-    return view('home_vlt', compact('jadwals', 'volunteer', 'totalJadwal', 'totalHadir'));
+    return view('home_vlt', compact('jadwals', 'volunteer', 'totalJadwal', 'totalHadir', 'divisi'));
 }
 
 public function checkIn(Request $request, $jadwal_id)
@@ -207,9 +244,13 @@ public function checkIn(Request $request, $jadwal_id)
         'longitude' => $longitude
     ]);
 
-    // Lokasi kampus UKDW
-    $kampusLat = -7.7682121;
-    $kampusLng =  110.4083341;
+    // // Lokasi kampus UKDW
+    $kampusLat = -7.7870345;
+    $kampusLng = 110.3783169;
+
+      // Lokasi kos
+    //   $kampusLat = -7.7857304;
+    //   $kampusLng =  110.3666397;
     $jarak = $this->hitungJarak($latitude, $longitude, $kampusLat, $kampusLng);
 
     \Log::info('📏 Jarak ke kampus:', ['jarak_km' => $jarak]);
@@ -318,26 +359,38 @@ public function hitungJarak($lat1, $lon1, $lat2, $lon2)
 
 
  ///////////////////////////////////////////////////////////////////////////////////////////////
-
-public function profile_vlt()
-{
-    $volunteer = Auth::guard('volunteer')->user();
-
-    // Ambil data volunteer lengkap + relasi divisi
-    $volunteer = Volunteer::with('divisi')->where('email', $volunteer->email)->first();
-
-    if (!$volunteer) {
-        abort(404, 'Volunteer tidak ditemukan.');
-    }
-
-    // Format tanggal langsung di sini
-    $volunteer->mulai_aktif_formatted = Carbon::parse($volunteer->mulai_aktif)->format('d M Y');
-    $volunteer->akhir_aktif_formatted = Carbon::parse($volunteer->akhir_aktif)->format('d M Y');
-
-    $divisi = $volunteer->divisi;
-
-    return view('profile_vlt', compact('volunteer', 'divisi'));
-}
+ public function profile_vlt()
+ {
+     $user = Auth::guard('volunteer')->user();
+ 
+     // Ambil data volunteer lengkap + relasi divisi dan subDivisi
+     $volunteer = volunteer::with(['divisi', 'subDivisi'])
+         ->where('email', $user->email)
+         ->first();
+ 
+     if (!$volunteer) {
+         abort(404, 'Volunteer tidak ditemukan.');
+     }
+ 
+     // Format tanggal
+     $volunteer->mulai_aktif_formatted = Carbon::parse($volunteer->mulai_aktif)->format('d M Y');
+     $volunteer->akhir_aktif_formatted = Carbon::parse($volunteer->akhir_aktif)->format('d M Y');
+ 
+     $divisi = $volunteer->divisi;
+     $subDivisi = $volunteer->subDivisi;
+ 
+     // Tentukan link kembali
+     if ($divisi && $divisi->nama_divisi === 'Creative') {
+         $kembaliLink = ($subDivisi && $subDivisi->nama_subdivisi === 'Desain') ? 'home_vltcreative' : 'home_vlt';
+     } elseif ($divisi && $divisi->nama_divisi === 'Konseling') {
+         $kembaliLink = 'home_vltcreative';
+     } else {
+         $kembaliLink = 'home_vlt';
+     }
+ 
+     return view('profile_vlt', compact('volunteer', 'divisi', 'kembaliLink'));
+ }
+ 
 
 public function profile_vltCreative()
 {
@@ -428,6 +481,21 @@ public function updatePeran(Request $request, $tugas_id)
     ]);
 
     return redirect()->back()->with('success', 'Peran berhasil disimpan!');
+}
+
+
+public function lihat_sertif()
+{
+    // Ambil volunteer yang sedang login melalui guard volunteer
+    $volunteer = Auth::guard('volunteer')->user();
+
+    // Jika volunteer ditemukan, ambil sertifikat berdasarkan vol_id
+    $sertifikat = $volunteer
+        ? sertif::where('vol_id', $volunteer->vol_id)->first()
+        : null;
+
+    return view('lihat_sertif', compact('volunteer', 'sertifikat'));
+
 }
 
 public function logoutVol()

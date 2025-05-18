@@ -16,7 +16,7 @@ class CreateDivisiTable extends Migration
         Schema::create('divisi', function (Blueprint $table) {
             $table->bigIncrements('divisi_id')->unsigned()->autoIncrement();
             $table->string('nama_divisi', 100);
-            $table->string('desk_divisi', 100);
+            $table->text('desk_divisi');
             $table->timestamps();
             
         });

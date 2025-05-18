@@ -21,8 +21,14 @@ class User extends Authenticatable
         'jabatan',
          'email',
         'password',
+        'status',
         'remember_token',
     ];
+
+    protected $attributes = [
+        'status' => 'Aktif',
+    ];
+    
 
     public function divisi()
     {

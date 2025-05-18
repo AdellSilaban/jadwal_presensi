@@ -1,4 +1,4 @@
-@extends('layout.main')
+
 @extends('layout.main')
 
 @section('sidebar')
@@ -10,7 +10,7 @@
         <li class="nav-item">
             <a class="nav-link collapsed" href="home_koor">
                 <i class="bi bi-house-door"></i>
-                <span>Home</span>
+                <span>Beranda</span>
             </a>
         </li>
 
