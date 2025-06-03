@@ -71,7 +71,7 @@
                         </td>
                         <td class="text-center align-middle">
                             @if ($koor->status === 'Aktif') {{-- lowercase, karena status di DB-nya pasti lowercase --}}
-                                <form action="{{ route('nonaktifKoor', $koor->id) }}" method="POST" class="form-nonaktif-{{ $koor->id }}">
+                                <form action="{{ route('nonaktifKoor', $koor->user_id) }}" method="POST" class="form-nonaktif-{{ $koor->id }}">
                                     @csrf
                                     @method('PUT')
                                     <button type="button" class="btn btn-sm btn-danger btn-nonaktif" data-id="{{ $koor->id }}">

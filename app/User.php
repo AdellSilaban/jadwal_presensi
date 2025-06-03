@@ -10,6 +10,10 @@ class User extends Authenticatable
 {
     use Notifiable;
 
+     protected $table = 'users'; // Pastikan tabelnya sesuai dengan nama tabel di database
+    protected $guard = 'users';
+    protected $primaryKey = 'user_id';
+
     /**
      * The attributes that are mass assignable.
      *

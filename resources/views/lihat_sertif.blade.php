@@ -1,40 +1,50 @@
-@extends('layout.main2')
+@extends('layout.main2')    
 
 @section('topbar')
 <nav class="header-nav ms-auto">
     <ul class="d-flex align-items-center">
       <li class="nav-item dropdown pe-3">
+
         <a class="nav-link nav-profile d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown">
-          <img src="assets/img/profile-img.jpg" alt="Profile" class="rounded-circle">
-          <span class="d-none d-md-block dropdown-toggle ps-2">{{ $volunteer->nama }}</span>
+            <span class="me-2 fw-semibold text-dark">{{ $volunteer->nama }}</span>
+            <i class="bi bi-person-circle fs-4 text-primary"></i>
         </a>
+
         <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
           <li class="dropdown-header">
             <h6>{{ $volunteer->nama }}</h6>
-            <span>Divisi {{ $volunteer->nama_divisi }}</span>
+            <span> Divisi {{ $volunteer->divisi->nama_divisi }}</span>
           </li>
+
           <li><hr class="dropdown-divider"></li>
+
           <li>
             <a class="dropdown-item d-flex align-items-center" href="/profile_vlt">
               <i class="bi bi-person"></i>
               <span>Profile</span>
             </a>
           </li>
+
+           <li><hr class="dropdown-divider"></li>
+
           <li>
-            <a class="dropdown-item d-flex align-items-center" href="{{ route('lihat_sertif') }}">
-              <i class="bi bi-file-earmark-text"></i>
-              <span class="ms-2">Sertifikatku</span>
+            <a class="dropdown-item d-flex align-items-center" href="/lihat_sertif">
+              <i class="bi bi-person"></i>
+              <span>Sertifikatku</span>
             </a>
           </li>
+
           <li><hr class="dropdown-divider"></li>
+
           <li>
             <a class="dropdown-item d-flex align-items-center" href="/logoutVol">
               <i class="bi bi-box-arrow-right"></i>
               <span>Logout</span>
             </a>
           </li>
-        </ul>
-      </li>
+        </ul><!-- End Profile Dropdown Items -->
+
+      </li><!-- End Profile Nav -->
     </ul>
 </nav>
 @endsection

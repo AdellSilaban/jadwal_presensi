@@ -25,6 +25,15 @@
             </a>
           </li>
 
+           <li><hr class="dropdown-divider"></li>
+
+          <li>
+            <a class="dropdown-item d-flex align-items-center" href="/lihat_sertif">
+              <i class="bi bi-person"></i>
+              <span>Sertifikatku</span>
+            </a>
+          </li>
+
           <li><hr class="dropdown-divider"></li>
 
           <li>
@@ -41,38 +50,19 @@
 @endsection
 
 @section('content')
-<div class="row g-3 mb-3 justify-content-center">
-    <div class="col-md-4 col-12">
-      <div class="card shadow-sm rounded-4 border-0 card-summary">
-        <div class="card-body">
-          <div class="text-muted small">Total Jadwal</div>
-          <div class="fs-4 fw-bold text-dark">{{ $totalJadwal ?? 0 }}</div>
-        </div>
-      </div>
-    </div>
-  
-    <div class="col-md-4 col-12">
-      <div class="card shadow-sm rounded-4 border-0 card-summary">
-        <div class="card-body">
-          <div class="text-muted small">Total Jam Hadir</div>
-          <div class="fs-4 fw-bold text-dark">{{ $totalHadir ?? 0 }}</div>
-        </div>
-      </div>
-    </div>
-  
-    <div class="col-md-4 col-12">
-      <div class="card shadow-sm rounded-4 border-0 card-summary">
-        <div class="card-body">
-          <strong class="text-dark">Aturan Presensi</strong>
-          <span class="text-muted small"> | Penting</span>
-          <ul class="ps-3 mt-2 mb-0 small">
-            <li class="text-success">Presensi hanya dapat dilakukan di hari <strong>H</strong>.</li>
-            <li class="text-primary">Lokasi harus berada di dalam kampus <strong>UKDW</strong>.</li>
-          </ul>
-        </div>
-      </div>
+<div class="d-inline-block">
+  <div class="card shadow-sm rounded-4 border-0">
+    <div class="card-body py-2 px-3">
+      <strong class="text-dark small">Aturan Presensi</strong>
+      <span class="text-muted small"> | Penting</span>
+      <ul class="ps-3 mt-2 mb-0 small">
+        <li class="text-success">Presensi hanya dapat dilakukan di hari <strong>H</strong>.</li>
+        <li class="text-primary">Lokasi harus berada di dalam kampus <strong>UKDW</strong>.</li>
+      </ul>
     </div>
   </div>
+</div>
+
 
     <div class="text-center mb-3">
       <h5 class="fw-semibold text-dark">Data Jadwal</h5>
@@ -85,7 +75,7 @@
             <thead class="thead-light">
               <tr>
                 <th>No</th>
-                <th>Tanggal</th>
+                <th>Tanggal Acara</th>
                 <th>Agenda</th>
                 <th>Check In</th>
                 <th>Check Out</th>
@@ -97,7 +87,7 @@
               @foreach ($jadwals as $jdwl)
               <tr>
                 <td>{{ $loop->iteration }}</td>
-                <td>{{ $jdwl->tgl_jadwal->format('d M Y') }}</td>
+                <td>{{ $jdwl->tgl_jadwal->format('d-m-Y')}}</td>
                 <td class="text-capitalize">{{ $jdwl->agenda }}</td>
                 <td>
                   @if (!$jdwl->my_presensi)
@@ -113,7 +103,7 @@
                       </form>
                   @elseif($jdwl->my_presensi->check_in)
                       <span class="badge pastel-badge-blue px-3 py-2 shadow-sm">
-                          <i class="fas fa-clock"></i> {{ \Carbon\Carbon::parse($jdwl->my_presensi->check_in)->format('d M Y H:i') }}
+                          <i class="fas fa-clock"></i> {{ \Carbon\Carbon::parse($jdwl->my_presensi->check_in)->format('d M Y, H:i') }}
                       </span>
                   @else
                       <span class="text-muted">-</span>
@@ -162,7 +152,7 @@
                   
                 <td>
                   @if ($jdwl->my_presensi && $jdwl->my_presensi->total_jam)
-                  {{ $jdwl->my_presensi->total_jam }}
+                  {{ $jdwl->my_presensi->total_jam }} jam
                   @else
                   <span class="text-muted">-</span>
                   @endif

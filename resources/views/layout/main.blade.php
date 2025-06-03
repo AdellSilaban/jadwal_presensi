@@ -36,6 +36,7 @@
 </head>
 
 <body>
+   <div class="wrapper"> <!-- Tambahkan wrapper di sini -->
   <!-- ======= Header ======= -->
   <header id="header" class="header fixed-top d-flex align-items-center">
     <div class="d-flex align-items-center justify-content-between">
@@ -78,6 +79,8 @@
       &copy; {{ now()->year }} Lembaga Pelayanan Kerohanian, Konseling, dan Spiritualitas Kampus
     </div>
   </footer><!-- End Footer -->
+</div>
+</body>
 
   <!-- Vendor JS Files -->
   <script src="{{ asset('assets/vendor/apexcharts/apexcharts.min.js') }}"></script>

@@ -15,25 +15,30 @@
 
         <li class="nav-item">
             <a class="nav-link collapsed" href="sub_divisi">
-                <i class="bi bi-calendar-event"></i>
+                <i class="bi bi-diagram-3"></i>
                 <span>Sub Divisi</span>
             </a>
         </li>
 
-        <li class="nav-item">
-            <a class="nav-link collapsed" href="jadwal_vlt">
-                <i class="bi bi-calendar-event"></i>
-                <span>Jadwal Volunteer</span>
-            </a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link collapsed" href="data_presensi">
-                <i class="bi bi-database"></i>
-                <span>Data Presensi</span>
-            </a>
-        </li>
+        {{-- Tampilkan menu ini hanya jika bukan Koordinator Konseling --}}
+        @if ($jabatan !== 'Koordinator Divisi Konseling')
 
-        {{-- Tambahkan menu ini untuk semua koordinator --}}
+            <li class="nav-item">
+                <a class="nav-link collapsed" href="jadwal_vlt">
+                    <i class="bi bi-calendar-event"></i>
+                    <span>Jadwal Volunteer</span>
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link collapsed" href="data_presensi">
+                    <i class="bi bi-database"></i>
+                    <span>Data Presensi</span>
+                </a>
+            </li>
+        @endif
+
+        {{-- Menu Upload Sertifikat tetap ditampilkan --}}
         <li class="nav-item">
             <a class="nav-link collapsed" href="{{ route('formuploadSertif') }}">
                 <i class="bi bi-upload"></i>
@@ -41,21 +46,8 @@
             </a>
         </li>
 
-        @if ($jabatan === 'Koordinator Divisi Creative')
-            <li class="nav-heading">Manajemen Tugas</li>
-            <li class="nav-item">
-                <a class="nav-link collapsed" href="task_mn">
-                    <i class="bi bi-list-task"></i>
-                    <span>Manajemen Tugas</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link collapsed" href="validasi_task">
-                    <i class="bi bi-check-circle"></i>
-                    <span>Validasi Tugas</span>
-                </a>
-            </li>
-        @elseif ($jabatan === 'Koordinator Divisi Konseling')
+        {{-- Menu Manajemen Tugas untuk Koordinator --}}
+        @if ($jabatan === 'Koordinator Divisi Creative' || $jabatan === 'Koordinator Divisi Konseling')
             <li class="nav-heading">Manajemen Tugas</li>
             <li class="nav-item">
                 <a class="nav-link collapsed" href="task_mn">
@@ -86,7 +78,15 @@
                 <form action="{{ route('updateJadwal', $jadwal->jadwal_id) }}" method="POST">
                     @csrf
                     @method('PUT')
-
+                      @if ($errors->any())
+                        <div class="alert alert-danger">
+                            <ul class="mb-0">
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
                     <div class="form-floating mb-3">
                         <input type="text" class="form-control" id="nama_divisi" name="nama_divisi" value="{{ $divisi->nama_divisi }}" readonly>
                         <label for="nama_divisi">Divisi</label>
@@ -113,30 +113,32 @@
                         <label for="jam_tutup">Jam Tutup Presensi</label>
                     </div>
 
-                    {{-- <div class="mb-3">
-                        <label class="mb-2 d-block">Petugas</label>
-                        @foreach ($jadwal->volunteers as $volunteer)
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="petugas_{{ $volunteer->vol_id }}" name="petugas[]" value="{{ $volunteer->vol_id }}"
-                                    @if (in_array($volunteer->vol_id, $selectedVolunteers)) checked @endif>
-                                <label class="form-check-label" for="petugas_{{ $volunteer->vol_id }}">{{ $volunteer->nama }}</label>
-                            </div>
-                        @endforeach
-                    </div> --}}
+                
 
-                    <div class="mb-3">
-                        <label class="mb-2 d-block">Petugas</label>
-                        @foreach ($allVolunteers as $volunteer)
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" 
-                                       id="petugas_{{ $volunteer->vol_id }}" 
-                                       name="petugas[]" 
-                                       value="{{ $volunteer->vol_id }}"
-                                       @if (in_array($volunteer->vol_id, $selectedVolunteers)) checked @endif>
-                                <label class="form-check-label" for="petugas_{{ $volunteer->vol_id }}">{{ $volunteer->nama }}</label>
-                            </div>
-                        @endforeach
-                    </div>
+                   <div class="mb-3">
+    <label class="form-label">Petugas</label>
+    <div class="row">
+        @foreach ($allVolunteers as $ptgs)
+            @if ($ptgs->status === 'Aktif' && (
+                    Auth::user()->jabatan === 'Koordinator Divisi Tim Ibadah Kampus' ||
+                    (Auth::user()->jabatan === 'Koordinator Divisi Creative' && optional($ptgs->subDivisi)->nama_subdivisi === 'PKK Live')
+                ))
+                <div class="form-check col-md-6">
+                    <input class="form-check-input"
+                           type="checkbox"
+                           name="petugas[]"
+                           value="{{ $ptgs->vol_id }}"
+                           id="petugas_{{ $ptgs->vol_id }}"
+                           @if (in_array($ptgs->vol_id, $selectedVolunteers)) checked @endif>
+                    <label class="form-check-label" for="petugas_{{ $ptgs->vol_id }}">
+                        {{ $ptgs->nama }}
+                    </label>
+                </div>
+            @endif
+        @endforeach
+    </div>
+</div>
+
                     
 
                     <div class="d-flex justify-content-end gap-2">

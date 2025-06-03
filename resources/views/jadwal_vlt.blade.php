@@ -125,8 +125,13 @@
                                 <th scope="row" style="text-align: center; vertical-align: middle;">{{ $loop->iteration }}</th>
                                 <td style="text-align: center; vertical-align: middle;">{{ $jdwl->tgl_jadwal->format('d-m-Y') }}</td>
                                 <td style="text-align: center; vertical-align: middle;">{{ $jdwl->agenda }}</td>
-                                <td style="text-align: center; vertical-align: middle;">{{ $jdwl->jam_buka }}</td>
-                                <td style="text-align: center; vertical-align: middle;">{{ $jdwl->jam_tutup }}</td>
+                                <td style="text-align: center; vertical-align: middle;">
+                                    {{ \Carbon\Carbon::parse($jdwl->jam_buka)->format('H:i') }}
+                                </td>
+                                <td style="text-align: center; vertical-align: middle;">
+                                    {{ \Carbon\Carbon::parse($jdwl->jam_tutup)->format('H:i') }}
+                                </td>
+
                                 <td style="text-align: center; vertical-align: middle;">
                                     @foreach ($jdwl->volunteers as $volunteer)
                                         {{ $volunteer->nama }} <br>
@@ -253,4 +258,17 @@
     </ul>
 </nav>
 @endsection
+<!-- SweetAlert2 -->
+@if (session('success'))
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        Swal.fire({
+            icon: 'success',
+            title: 'Berhasil',
+            text: '{{ session('success') }}',
+            confirmButtonText: 'Oke'
+        });
+    });
+</script>
+@endif
 

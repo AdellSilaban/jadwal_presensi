@@ -8,6 +8,7 @@ use App\divisi;
 use App\volunteer;
 use App\jadwal;
 use App\tugas;
+use App\desk_div;
 use Carbon\Carbon;
 use PDF;
 use Illuminate\Support\Facades\DB;
@@ -16,7 +17,7 @@ class KPLController extends Controller
 {
 
 
-public function dashboard()
+public function dashboard(Request $request)
 {
     $user = Auth::user();
     $total_volunteer = volunteer::count();
@@ -24,29 +25,51 @@ public function dashboard()
     $vol_aktif = volunteer::where('status', 'Aktif')->count();
     $vol_tidak_aktif = volunteer::where('status', 'Tidak Aktif')->count();
 
-    $total_tugas_selesai = DB::table('tugas_volunteer')
-        ->where('status_validasi', 'Selesai')
-        ->count();
+    $bulan_tugas = $request->bulan_tugas;
+    $tahun_tugas = $request->tahun_tugas;
 
-    $total_jam_presensi = DB::table('presensi')
+    $bulan_presensi = $request->bulan_presensi;
+    $tahun_presensi = $request->tahun_presensi;
+
+    // --- Total volunteer
+    $total_volunteer = DB::table('volunteer')->count();
+    $vol_aktif = DB::table('volunteer')->where('status', 'Aktif')->count();
+    $vol_tidak_aktif = DB::table('volunteer')->where('status', 'Tidak Aktif')->count();
+
+    // --- Presensi (Total Jam)
+    $presensi = DB::table('presensi')
         ->whereNotNull('check_in')
-        ->whereNotNull('check_out')
-        ->get()
-        ->reduce(function ($carry, $row) {
-            $start = Carbon::parse($row->check_in);
-            $end = Carbon::parse($row->check_out);
-            return $carry + $end->diffInMinutes($start);
-        }, 0);
+        ->whereNotNull('check_out');
 
-    $total_jam_presensi = floor($total_jam_presensi / 60);
+    if ($bulan_presensi && $tahun_presensi) {
+        $presensi->whereMonth('check_in', $bulan_presensi)
+                 ->whereYear('check_in', $tahun_presensi);
+    }
 
+    $total_jam_presensi = $presensi->get()->reduce(function ($carry, $row) {
+        $start = Carbon::parse($row->check_in);
+        $end = Carbon::parse($row->check_out);
+        return $carry + $end->diffInMinutes($start);
+    }, 0);
+    $total_jam_presensi = floor($total_jam_presensi / 60); // menit → jam
+
+    // --- Tugas selesai
+    $tugas = DB::table('tugas_volunteer')->where('status_validasi', 'Selesai');
+
+    if ($bulan_tugas && $tahun_tugas) {
+        $tugas->whereMonth('updated_at', $bulan_tugas)
+              ->whereYear('updated_at', $tahun_tugas);
+    }
+
+    $total_tugas_selesai = $tugas->count();
+
+    // --- Volunteer per divisi
     $volunteerPerDivisi = DB::table('volunteer')
-    ->join('divisi', 'volunteer.divisi_id', '=', 'divisi.divisi_id')
-    ->where('volunteer.status', 'Aktif') // 👈 filter aktif aja
-    ->select('divisi.nama_divisi', DB::raw('count(*) as total'))
-    ->groupBy('divisi.nama_divisi')
-    ->get();
-
+        ->join('divisi', 'volunteer.divisi_id', '=', 'divisi.divisi_id')
+        ->where('volunteer.status', 'Aktif')
+        ->select('divisi.nama_divisi', DB::raw('count(*) as total'))
+        ->groupBy('divisi.nama_divisi')
+        ->get();
 
     return view('dashboard', compact(
         'user',
@@ -58,6 +81,7 @@ public function dashboard()
         'volunteerPerDivisi'
     ));
 }
+
 
 
 public function home_kepalaPKK()
@@ -72,7 +96,8 @@ public function home_kepalaPKK()
         $akhir = Carbon::parse($vlt->akhir_aktif);
         $vlt->mulai = $mulai->format('d-m-Y');
         $vlt->akhir = $akhir->format('d-m-Y');
-        $vlt->total_hari = $akhir->diffInDays($mulai) + 1;
+        $totalBulan = $mulai->diffInMonths($akhir) + 1;
+        $vlt->total_bulan = $totalBulan;
         return $vlt;
     });
 
@@ -96,52 +121,90 @@ public function home_kepalaPKK()
     }
 
     public function simpanDiv(Request $request)
-    {
-        $request->validate([
-            'nama_divisi' => 'required',
-            'desk_divisi' => 'required|array|min:1', // pastikan berupa array dan minimal 1 isi
-            'desk_divisi.*' => 'nullable|string',  // setiap item harus string
+{
+    $request->validate([
+        'nama_divisi' => 'required',
+        'deskripsi' => 'required|array|min:1', // input array dari deskripsi
+        'deskripsi.*' => 'nullable|string',    // setiap deskripsi harus berupa string
+    ]);
+
+
+    // Simpan divisi ke tabel `divisi`
+    $divisi = divisi::create([
+        'nama_divisi' => $request->nama_divisi,
+    ]);
+
+  foreach ($request->deskripsi as $desk) {
+    if (!empty($desk)) {
+        DB::table('desk_div')->insert([
+            'divisi_id' => $divisi->divisi_id,
+            'deskripsi' => $desk,
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
-    
-        // Gabungkan array menjadi string bullet list
-        $deskDivisiArray = array_filter($request->desk_divisi); // hilangkan input kosong
-        $deskDivisiText = '• ' . implode("\n• ", $deskDivisiArray);
-    
-        divisi::create([
-            'nama_divisi' => $request->nama_divisi,
-            'desk_divisi' => $deskDivisiText,
-        ]);
-    
-        return redirect('/div_kepalaPKK')->with('success', 'Data divisi berhasil disimpan.');
     }
+}
+
+return redirect('/div_kepalaPKK')->with('success', 'Data divisi berhasil disimpan.');
+
+    return redirect('/div_kepalaPKK')->with('success', 'Data divisi berhasil disimpan.');
+}
+
     
 
-public function edit_div($divisi_id, Request $request){
+public function edit_div($divisi_id, Request $request)
+{
     $user = Auth::user();
-    $divisi = divisi::find($divisi_id);
+
+    $divisi = divisi::with('desk_div')->find($divisi_id);
+
     return view('edit_div', compact('divisi', 'user'));
 }
+
 
 public function updateDiv(Request $request, $divisi_id)
 {
     $request->validate([
         'nama_divisi' => 'required',
-        'desk_divisi' => 'required|array|min:1',
-        'desk_divisi.*' => 'nullable|string',
-
+        'deskripsi' => 'required|array|min:1',
+        'deskripsi.*' => 'nullable|string',
+        'deskripsi_id' => 'required|array|min:1',
+        'deskripsi_id.*' => 'nullable|integer',
     ]);
 
-    $deskDivisiArray = array_filter($request->desk_divisi); // buang yang kosong
-    $deskDivisiText = '• ' . implode("\n• ", $deskDivisiArray);
-
+    // Update nama divisi
     $divisi = divisi::findOrFail($divisi_id);
     $divisi->update([
         'nama_divisi' => $request->nama_divisi,
-        'desk_divisi' => $deskDivisiText,
     ]);
+
+   
+foreach ($request->deskripsi as $index => $isi) {
+    $id = $request->deskripsi_id[$index] ?? null;
+
+    if ($id !== null && trim($isi) === '') {
+        // Hapus deskripsi yang dikosongkan
+        desk_div::where('deskripsi_id', $id)->delete();
+    } elseif ($id !== null && $isi !== null) {
+        // Update deskripsi yang diisi
+        desk_div::where('deskripsi_id', $id)->update([
+            'deskripsi' => $isi,
+            'updated_at' => now()
+        ]);
+    } elseif ($id === null && trim($isi) !== '') {
+        // Tambah deskripsi baru
+        desk_div::create([
+            'divisi_id' => $divisi_id,
+            'deskripsi' => $isi,
+            'created_at' => now(),
+            'updated_at' => now()
+        ]);
+    }
+}
 
     return redirect('/div_kepalaPKK')->with('success', 'Data divisi berhasil diupdate!');
 }
+
 
 
 public function hapus_div($divisi_id){
@@ -203,9 +266,9 @@ public function koor_kepalaPKK()
     return view('koor_kepalaPKK', compact('koordinator', 'user'));
 }
 
-public function nonaktifKoor($id)
+public function nonaktifKoor($user_id)
 {
-    $user = User::findOrFail($id);
+    $user = User::findOrFail($user_id);
     $user->status = 'Tidak Aktif';
     $user->save();
 

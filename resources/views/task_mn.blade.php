@@ -13,14 +13,15 @@
             </a>
         </li>
 
+        <li class="nav-item">
+            <a class="nav-link collapsed" href="sub_divisi">
+                <i class="bi bi-diagram-3"></i>
+                <span>Sub Divisi</span>
+            </a>
+        </li>
+
         {{-- Tampilkan menu ini hanya jika bukan Koordinator Konseling --}}
         @if ($jabatan !== 'Koordinator Divisi Konseling')
-            <li class="nav-item">
-                <a class="nav-link collapsed" href="sub_divisi">
-                    <i class="bi bi-calendar-event"></i>
-                    <span>Sub Divisi</span>
-                </a>
-            </li>
 
             <li class="nav-item">
                 <a class="nav-link collapsed" href="jadwal_vlt">
@@ -70,7 +71,7 @@
 
 <div id="content">
     <div class="container-fluid">
-        <h1 class="h4 mb-1 text-gray-800">Manajemen Task</h1>
+        <h1 class="h4 mb-1 text-gray-800">Manajemen Tugas</h1>
         <p style="font-size: 0.9rem;">Daftar tugas yang dikelola oleh koordinator divisi.</p>
         <br>
 
@@ -111,7 +112,10 @@
                         <tr style="background-color: #f9f9f9;">
                             <th style="text-align: center; vertical-align: middle;">{{ $loop->iteration }}</th>
                             <td style="vertical-align: middle; vertical-align: middle;">{{ $task->desk_tgs }}</td>
-                            <td style="text-align: center; vertical-align: middle;">{{ $task->deadline }}</td>
+                          <td style="text-align: center; vertical-align: middle;">
+    {{ \Carbon\Carbon::parse($task->deadline)->format('d-m-Y')}}
+</td>
+
                             <td>
                                 <a href="{{ $task->link_gdrive }}" target="_blank" class="text-decoration-none">
                                     {{ Str::limit($task->link_gdrive, 40) }}  <!-- Menampilkan hanya sebagian link untuk kejelasan -->
@@ -227,3 +231,16 @@
 </nav>
 @endsection
 
+<!-- SweetAlert2 -->
+@if (session('success'))
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        Swal.fire({
+            icon: 'success',
+            title: 'Berhasil',
+            text: '{{ session('success') }}',
+            confirmButtonText: 'Oke'
+        });
+    });
+</script>
+@endif

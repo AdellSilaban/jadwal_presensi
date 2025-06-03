@@ -13,14 +13,15 @@
             </a>
         </li>
 
+        <li class="nav-item">
+            <a class="nav-link collapsed" href="sub_divisi">
+                <i class="bi bi-diagram-3"></i>
+                <span>Sub Divisi</span>
+            </a>
+        </li>
+
         {{-- Tampilkan menu ini hanya jika bukan Koordinator Konseling --}}
         @if ($jabatan !== 'Koordinator Divisi Konseling')
-            <li class="nav-item">
-                <a class="nav-link collapsed" href="sub_divisi">
-                    <i class="bi bi-calendar-event"></i>
-                    <span>Sub Divisi</span>
-                </a>
-            </li>
 
             <li class="nav-item">
                 <a class="nav-link collapsed" href="jadwal_vlt">

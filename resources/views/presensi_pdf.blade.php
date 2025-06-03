@@ -80,6 +80,7 @@
         <thead>
             <tr>
                 <th>No</th>
+                <th>Agenda</th>
                 <th>Hari/Tanggal</th>
                 <th>Jam Datang</th>
                 <th>Jam Pulang</th>
@@ -92,17 +93,15 @@
             @foreach ($presensi as $p)
                 <tr>
                     <td>{{ $no++ }}</td>
+                    <td>{{$p->jadwal->agenda}}</td>
                     <td>{{ \Carbon\Carbon::parse($p->tanggal)->format('l, d F Y') }}</td>
                     <td>{{ \Carbon\Carbon::parse($p->check_in)->format('H:i') }}</td>
                     <td>{{ \Carbon\Carbon::parse($p->check_out)->format('H:i') }}</td>
                     <td>{{ $p->desk_tgs ?? '-' }}</td>
-                    <td>
-                        @if ($p->check_in && $p->check_out)
-                            {{ \Carbon\Carbon::parse($p->check_in)->diffInHours($p->check_out) }} Jam
-                        @else
-                            -
-                        @endif
-                    </td>
+                   <td>
+                    {{ $p->jam_dibulatkan ?? '-' }} Jam
+                </td>
+
                 </tr>
             @endforeach
         </tbody>

@@ -13,14 +13,15 @@
             </a>
         </li>
 
+        <li class="nav-item">
+            <a class="nav-link collapsed" href="sub_divisi">
+                <i class="bi bi-diagram-3"></i>
+                <span>Sub Divisi</span>
+            </a>
+        </li>
+
         {{-- Tampilkan menu ini hanya jika bukan Koordinator Konseling --}}
         @if ($jabatan !== 'Koordinator Divisi Konseling')
-            <li class="nav-item">
-                <a class="nav-link collapsed" href="sub_divisi">
-                    <i class="bi bi-calendar-event"></i>
-                    <span>Sub Divisi</span>
-                </a>
-            </li>
 
             <li class="nav-item">
                 <a class="nav-link collapsed" href="jadwal_vlt">
@@ -90,32 +91,32 @@
                         <label for="deadline">Deadline</label>
                     </div>
 
-<!-- Pilih Divisi -->
-<div class="mb-4">
-  <label for="divisi_id" class="form-label fw-semibold">Divisi</label>
-  <select class="form-select" id="divisi_id" name="divisi_id" disabled>
-      <option value="{{ $divisi->divisi_id }}">{{ $divisi->nama_divisi }}</option>
-  </select>
-  <input type="hidden" name="divisi_id" value="{{ $divisi->divisi_id }}"> {{-- agar tetap dikirim --}}
+                    <div class="form-floating mb-3">
+                        <input type="text" class="form-control" id="nama_divisi" name="nama_divisi" value="{{ $divisi->nama_divisi }}" readonly>
+                        <label for="nama_divisi">Divisi</label>
+                        <input type="hidden" name="divisi_id" value="{{ $divisi->divisi_id }}">
+                    </div>
+
+<div class="mb-3">
+    <label class="form-label">Petugas</label>
+    <div class="row">
+        @foreach ($allVolunteers as $ptgs)
+            <div class="form-check col-md-6">
+                <input class="form-check-input"
+                       type="checkbox"
+                       name="volunteers[]"
+                       value="{{ $ptgs->vol_id }}"
+                       id="petugas_{{ $ptgs->vol_id }}"
+                       {{ in_array($ptgs->vol_id, $selectedVolunteers) ? 'checked' : '' }}>
+                <label class="form-check-label" for="petugas_{{ $ptgs->vol_id }}">
+                    {{ $ptgs->nama }}
+                </label>
+            </div>
+        @endforeach
+    </div>
 </div>
 
-<!-- Pilih Volunteer -->
-<div class="mb-4">
-  <label class="form-label fw-semibold">Volunteer Yang Bertugas</label>
-  
-  <div class="form-check-container d-flex flex-column gap-2">
-      @foreach($allVolunteers as $vlt)
-          <div class="form-check">
-              <input class="form-check-input" type="checkbox" name="volunteers[]" 
-                     value="{{ $vlt->vol_id }}" id="vlt{{ $vlt->vol_id }}"
-                     {{ in_array($vlt->vol_id, $selectedVolunteers) ? 'checked' : '' }}>
-              <label class="form-check-label" for="vlt{{ $vlt->vol_id }}">
-                  {{ $vlt->nama }} - {{ $vlt->status }}
-              </label>
-          </div>
-      @endforeach
-  </div>
-</div>
+
 
 
 

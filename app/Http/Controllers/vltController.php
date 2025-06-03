@@ -139,23 +139,14 @@ public function home_vlt()
     $divisi = $volunteer->divisi; // ambil data divisi dari relasi
 
 
-    // Ambil semua jadwal yang berelasi dengan volunteer ini
-    $jadwals = $volunteer->jadwals;
+    // Ambil semua jadwal yang berelasi dengan volunteer ini dan diurutin berdasarkan tanggal
+    $jadwals = $volunteer->jadwals()->orderBy('tgl_jadwal', 'asc')->get();
+
 
     // Ambil semua presensi volunteer
     $presensiList = presensi::where('vol_id', $volunteer->vol_id)->get()->keyBy('jadwal_id');
 
-    // Hitung total jadwal
-    $totalJadwal = $jadwals->count();
-
-    // Hitung total kehadiran (hanya yang sudah checkout)
-    $totalHadir = $presensiList->filter(function ($p) {
-        return $p->check_out !== null;
-    })->reduce(function ($carry, $p) {
-        $jam = (int) \Carbon\Carbon::createFromFormat('H:i:s', $p->total_jam)->format('H');
-        return $carry + $jam;
-    }, 0);
-    
+ 
 
     // Tempelkan presensi & info "hari ini" ke setiap jadwal
     foreach ($jadwals as $jadwal) {
@@ -167,9 +158,11 @@ public function home_vlt()
         $jadwal->canCheckIn = $jadwal->is_today && $now->greaterThanOrEqualTo($jamBuka);
     }
 
-    return view('home_vlt', compact('jadwals', 'volunteer', 'totalJadwal', 'totalHadir', 'divisi'));
+    return view('home_vlt', compact('jadwals', 'volunteer', 'divisi'));
 }
 
+
+//////////////////////////////////////////CHECK IN//////////////////////////////////
 public function checkIn(Request $request, $jadwal_id)
 {
     \Log::info('➡️ START CHECK IN', [
@@ -245,12 +238,12 @@ public function checkIn(Request $request, $jadwal_id)
     ]);
 
     // // Lokasi kampus UKDW
-    $kampusLat = -7.7870345;
-    $kampusLng = 110.3783169;
+    // $kampusLat = -7.7864427;
+    // $kampusLng = 110.378312; 
 
       // Lokasi kos
-    //   $kampusLat = -7.7857304;
-    //   $kampusLng =  110.3666397;
+      $kampusLat = -7.8033453;
+      $kampusLng =  110.3487662;
     $jarak = $this->hitungJarak($latitude, $longitude, $kampusLat, $kampusLng);
 
     \Log::info('📏 Jarak ke kampus:', ['jarak_km' => $jarak]);
@@ -263,7 +256,6 @@ public function checkIn(Request $request, $jadwal_id)
     $presensi->jadwal_id = $jadwal_id;
     $presensi->vol_id = $volunteer->vol_id;
     $presensi->check_in = $now;
-    $presensi->status = 'Diproses';
 
     $saved = $presensi->save();
     \Log::info('Presensi disimpan?', ['saved' => $saved]);
@@ -304,46 +296,78 @@ public function checkOut(Request $request, $jadwal_id)
         return redirect()->back()->with('error', 'Sudah melakukan check-out sebelumnya.');
     }
 
-    $jadwal = jadwal::findOrFail($jadwal_id);
-    $now = Carbon::now();
-    $jamTutup = Carbon::createFromFormat('H:i:s', $jadwal->jam_tutup);
+ // Ambil jadwal
+$jadwal = jadwal::findOrFail($jadwal_id);
+$now = Carbon::now();
 
-    if (!$now->lessThan($jamTutup)) {
-        return redirect()->back()->with('error', 'Check-out hanya bisa dilakukan sebelum jam tutup.');
-    }
-
-    // Hitung durasi yang akan ditambahkan
-    $durasiBaruDetik = 0;
-    if ($presensi->check_in && $now->gt($presensi->check_in)) {
-        $durasiBaruDetik = $now->diffInSeconds(Carbon::parse($presensi->check_in));
-    }
-
-    // Hitung total durasi bulan ini
-    $totalDetikBulanIni = presensi::where('vol_id', $volunteer->vol_id)
-        ->whereNotNull('check_out')
-        ->whereMonth('check_out', $now->month)
-        ->whereYear('check_out', $now->year)
-        ->get()
-        ->reduce(function ($carry, $item) {
-            $durasi = Carbon::createFromFormat('H:i:s', $item->total_jam);
-            return $carry + ($durasi->hour * 3600 + $durasi->minute * 60 + $durasi->second);
-        }, 0);
-
-    // Validasi apakah melebihi 72 jam (259200 detik)
-    if (($totalDetikBulanIni + $durasiBaruDetik) > (72 * 3600)) {
-        return redirect()->back()->with('error', 'Total jam presensi bulan ini sudah melebihi 72 jam.');
-    }
-
-    // Simpan data presensi
-    $presensi->check_out = $now;
-    $presensi->desk_tgs = $desk_tgs;
-    $presensi->total_jam = gmdate('H:i:s', $durasiBaruDetik);
-    $presensi->status = 'Diproses';
-    $presensi->save();
-
-    return redirect()->route('home_vlt')->with('success', 'Berhasil Check-out!');
+// Cek apakah jam_tutup tersedia
+if (empty($jadwal->jam_tutup)) {
+    return redirect()->back()->with('error', 'Data jam tutup belum diatur.');
 }
 
+try {
+    // Lebih fleksibel daripada createFromFormat
+    $jamTutup = Carbon::parse(trim($jadwal->jam_tutup));
+} catch (\Exception $e) {
+    return redirect()->back()->with('error', 'Format jam tutup tidak valid: ' . $e->getMessage());
+}
+
+// Validasi apakah masih boleh check-out
+if (!$now->lessThan($jamTutup)) {
+    return redirect()->back()->with('error', 'Check-out hanya bisa dilakukan sebelum jam tutup.');
+}
+
+// Ambil data presensi volunteer yang sedang aktif (belum check out)
+$presensi = presensi::where('vol_id', $volunteer->vol_id)
+    ->where('jadwal_id', $jadwal_id)
+    ->whereNull('check_out')
+    ->first();
+
+if (!$presensi) {
+    return redirect()->back()->with('error', 'Data presensi tidak ditemukan atau sudah check-out.');
+}
+
+// Hitung durasi presensi saat ini
+$checkIn = Carbon::parse($presensi->check_in);
+$checkOut = Carbon::now(); // waktu sebenarnya volunteer check-out
+$durasiBaruDetik = $checkOut->diffInSeconds($checkIn);
+
+
+
+
+// Hitung total durasi bulan ini dari semua presensi volunteer yang sudah check-out
+$totalDetikBulanIni = presensi::where('vol_id', $volunteer->vol_id)
+    ->whereNotNull('check_out')
+    ->whereMonth('check_out', $now->month)
+    ->whereYear('check_out', $now->year)
+    ->get()
+    ->reduce(function ($carry, $item) {
+        if (!$item->total_jam) return $carry;
+        return $carry + ((int) $item->total_jam * 3600); // karena disimpan sebagai jam bulat
+    }, 0);
+
+// Validasi total jam tidak melebihi 72 jam (259200 detik)
+if (($totalDetikBulanIni + $durasiBaruDetik) > (72 * 3600)) {
+    return redirect()->back()->with('error', 'Total jam presensi bulan ini sudah melebihi 72 jam.');
+}
+
+// ===== Perubahan inti: Simpan total jam sebagai integer =====
+$durasiMenit = $durasiBaruDetik / 60;
+// Hitung jam utuh
+$totalJam = floor($durasiMenit / 60);
+
+// Kalau sisa menit ≥ 30 → tambah 1 jam
+if (($durasiMenit % 60) >= 30) {
+    $totalJam += 1;
+}
+
+$presensi->check_out = $now;
+$presensi->desk_tgs = $desk_tgs ?? '-';
+$presensi->total_jam = $totalJam; // simpan sebagai integer (jam bulat)
+$presensi->save();
+
+return redirect()->route('home_vlt')->with('success', 'Berhasil Check-out!');
+}
 
 
 
@@ -426,25 +450,21 @@ public function profile_vltCreative()
     }
 
     // Ambil semua tugas dengan data pivot (status & peran)
-    $tasks = $volunteer->tugas()->withPivot('status', 'peran')->get();
+    $tasks = $volunteer->tugas()->withPivot('status', 'peran')->orderBy('deadline', 'asc')->get();
 
     $tasks = $tasks->map(function ($task) {
         $deadline = \Carbon\Carbon::parse($task->deadline);
-        $task->isDeadlinePassed = $deadline->isPast();
+          $task->isDeadlinePassed = $deadline->endOfDay()->isPast();
         $task->daysLeft = $deadline->diffInDays(now());
         $task->showAlert = ($task->daysLeft === 2 && !$task->isDeadlinePassed);
         return $task;
     });
-    
 
-    // Hitung total semua tugas
-    $totalTask = $tasks->count();
+     $tugas2HariLagi = $tasks->filter(function ($t) {
+        return $t->showAlert && $t->pivot->status_validasi !== 'Selesai';
+    });
 
-    // Hitung berdasarkan status dari tabel pivot
-    $totalSelesai = $tasks->where('pivot.status', 'Tugas Selesai')->count();
-    $totalBelum   = $tasks->where('pivot.status', 'Belum Dikerjakan')->count();
-
-    return view('home_vltcreative', compact('volunteer', 'tasks', 'totalTask', 'totalSelesai', 'totalBelum'));
+    return view('home_vltcreative', compact('volunteer', 'tasks', 'tugas2HariLagi'));
 }
 
 public function updateTaskStatus($tugas_id, $status)
@@ -498,11 +518,16 @@ public function lihat_sertif()
 
 }
 
-public function logoutVol()
+public function logoutVol(Request $request)
 {
-    Auth::guard('volunteer')->logout(); // logout dari guard volunteer
-    return redirect('/loginVol');       // redirect ke halaman login volunteer
+    Auth::guard('volunteer')->logout();
+
+    $request->session()->invalidate();        // ❗️Hapus semua data session
+    $request->session()->regenerateToken();   // ❗️Bikin ulang CSRF token
+
+    return redirect('/loginVol');
 }
+
 }
  
 

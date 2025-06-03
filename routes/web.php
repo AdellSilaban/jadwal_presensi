@@ -8,24 +8,53 @@ use Illuminate\Support\Facades\Auth;
 // =================================
 
 Route::get('/', function () {
-    return redirect('/login'); // atau dashboard default
+    // Jika login sebagai volunteer
+    if (Auth::guard('volunteer')->check()) {
+        $volunteer = Auth::guard('volunteer')->user()->load('divisi', 'subDivisi');
+        $divisi = $volunteer->divisi->nama_divisi ?? '';
+        $subDivisi = $volunteer->subDivisi->nama_subdivisi ?? '';
+
+        if ($divisi === 'Creative' && $subDivisi === 'Desain') {
+            return redirect('/home_vltcreative');
+        } elseif ($divisi === 'Konseling') {
+            return redirect('/home_vltcreative');
+        } else {
+            return redirect('/home_vlt');
+        }
+    }
+
+    // Jika login sebagai koordinator atau kepala
+    if (Auth::check()) {
+        $user = Auth::user();
+        switch ($user->jabatan) {
+            case 'Kepala LPKKSK':
+                return redirect('/dashboard');
+            case 'Koordinator Divisi Creative':
+            case 'Koordinator Divisi Tim Ibadah Kampus':
+            case 'Koordinator Divisi Konseling':
+                return redirect('/home_koor');
+        }
+    }
+
+    // Kalau belum login sama sekali
+    return redirect('/login');
 });
 
 
-Route::middleware('guest')->group(function () {
+// ✅ Route untuk user belum login
+    // Login Koordinator & Kepala
     Route::get('/login', 'authController@login')->name('login');
-    Route::post('/ceklogin', 'authController@ceklogin');
+    Route::post('/ceklogin', 'authController@ceklogin')->name('ceklogin');
 
+    // Register Koordinator
     Route::get('/register', 'authController@register');
     Route::post('/simpanRegis', 'authController@simpanRegis');
 
-
-});
-
-Route::middleware('guest:volunteer')->group(function () {
+    // Login Volunteer
     Route::get('/loginVol', 'vltController@loginVol')->name('loginVol');
     Route::post('/cekloginVol', 'vltController@cekloginVol')->name('cekloginVol');
-});
+
+
 
 Route::middleware(['auth'])->group(function () {
 
@@ -64,7 +93,7 @@ Route::get('/lihat_sertif', 'vltController@lihat_sertif')->name('lihat_sertif');
 // =================================
 // KOORDINATOR ROUTES
 // =================================
-Route::middleware(['auth:web'])->group(function () {
+Route::middleware(['auth'])->group(function () {
     Route::get('/home_koor', 'koorController@home_koor')->name('home_koor');
     Route::get('/jadwal_vlt', 'koorController@jadwal_vlt');
     Route::get('/data_presensi', 'koorController@data_presensi')->name('data_presensi');
@@ -130,12 +159,12 @@ Route::middleware(['auth:web'])->group(function () {
 // =================================
 // KEPALA LPKKSK ROUTES
 // =================================
-Route::middleware(['auth:web'])->group(function () {
+Route::middleware(['auth'])->group(function () {
     Route::get('/home_kepalaPKK', 'KPLController@home_kepalaPKK');
     Route::get('/dashboard', 'KPLController@dashboard')->name('dashboard');
     Route::get('/div_kepalaPKK', 'KPLController@div_kepalaPKK');
     Route::get('/koor_kepalaPKK', 'KPLController@koor_kepalaPKK');
-    Route::put('/nonaktifKoor/{id}', 'KPLController@nonaktifKoor')->name('nonaktifKoor');
+    Route::put('/nonaktifKoor/{user_id}', 'KPLController@nonaktifKoor')->name('nonaktifKoor');
     Route::get('/tambah_div', 'KPLController@tambah_div');
     Route::post('/simpanDiv', 'KPLController@simpanDiv');
     Route::get('/edit_div/{div_id}', 'KPLController@edit_div')->name('edit_div'); 

@@ -80,9 +80,10 @@
                                 <td class="text-center">{{ $div->nama_divisi }}</td>
                                 <td class="text-start">
                                     <ul class="mb-0">
-                                        @foreach (explode("\n", $div->desk_divisi) as $poin)
-                                            <li>{{ ltrim($poin, '• ') }}</li>
-                                        @endforeach
+                                      @foreach ($div->desk_div as $poin)
+                                        <li>{{ $poin->deskripsi }}</li>
+                                    @endforeach
+
                                     </ul>
                                 </td>
                                 

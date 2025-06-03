@@ -22,7 +22,7 @@ class volunteer extends Authenticatable
         'email',
         'mulai_aktif',
         'akhir_aktif',
-        'no_rek_vlt',
+        'bank_no_rek',
         'divisi_id',
         'password',
         'sub_divisi_id',

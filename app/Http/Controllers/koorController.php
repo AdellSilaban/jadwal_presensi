@@ -54,8 +54,21 @@ public function home_koor()
     foreach ($volunteer as $vol) {
         $akhirAktif = Carbon::parse($vol->akhir_aktif);
         $vol->status = $akhirAktif->isPast() ? 'Tidak Aktif' : 'Aktif';
-        $vol->save();
+        
+         // Hitung total bulan aktif
+    $mulai = Carbon::parse($vol->mulai_aktif);
+    $akhir = Carbon::parse($vol->akhir_aktif);
+    $totalBulan = $mulai->diffInMonths($akhir) + 1;
+
+    // Tambahkan ke properti baru (kalau ingin dipakai di blade)
+    $vol->total_bulan = $totalBulan;
+
+    // Format tanggal untuk tampilan
+    $vol->mulai_aktif = $mulai->format('d-m-Y');
+    $vol->akhir_aktif = $akhir->format('d-m-Y');
     }
+
+       
 
     return view('home_koor', compact('volunteer', 'divisi', 'user'));
 }
@@ -88,7 +101,7 @@ public function home_koor()
         'fakultas' => 'required',
         'jurusan' => 'required',
         'bank_no_rek' => 'required',
-        'email' => 'required|email|unique:volunteer,email',
+        'email' => 'required|email:rfc,dns|unique:volunteer,email',
         'mulai_aktif' => 'required|date',
         'akhir_aktif' => 'required|date|after_or_equal:mulai_aktif',
         'divisi_id' => 'required|exists:divisi,divisi_id',
@@ -141,6 +154,7 @@ public function home_koor()
                 'nama' => $request->nama,
                 'nim' => $request->nim,
                 'email' => $request->email,
+                'bank_no_rek' => $request->bank_no_rek,
                 'fakultas' => $request->fakultas,
                 'jurusan' => $request->jurusan,
                 'mulai_aktif'=> $request->mulai_aktif,
@@ -166,11 +180,13 @@ public function home_koor()
 public function jadwal_vlt() {
     $user = Auth::user(); 
     
-    $jadwal = jadwal::with(['volunteers', 'divisi'])
-        ->whereHas('divisi', function ($q) use ($user) {
-            $q->where('nama_divisi', $user->divisi->nama_divisi);
-        })
-        ->get();
+  $jadwal = jadwal::with(['volunteers', 'divisi'])
+    ->whereHas('divisi', function ($q) use ($user) {
+        $q->where('nama_divisi', $user->divisi->nama_divisi);
+    })
+    ->orderBy('tgl_jadwal', 'asc') // ← tambahkan ini
+    ->get();
+
 
     return view('jadwal_vlt', compact('jadwal', 'user'));
 }
@@ -203,43 +219,111 @@ public function tambah_jadwal()
 
 public function simpanjadwal(Request $request)
 {
-        $jadwal = jadwal::create([
-            'divisi_id' => $request->divisi_id, 
-            'tgl_jadwal' => $request->tgl_jadwal,
-            'agenda' => $request->agenda,
-            'jam_buka' => Carbon::parse($request->jam_buka)->format('H:i:s'),
-            'jam_tutup' => Carbon::parse($request->jam_tutup)->format('H:i:s'),
+    // Validasi semua dulu
+    foreach ($request->jadwals as $index => $jadwal) {
+        try {
+            $jamBuka = \Carbon\Carbon::createFromFormat('H:i', $jadwal['jam_buka']);
+            $jamTutup = \Carbon\Carbon::createFromFormat('H:i', $jadwal['jam_tutup']);
+
+            if ($jamTutup->lessThanOrEqualTo($jamBuka)) {
+                return back()->withErrors([
+                    "jadwals.$index.jam_tutup" => "Jam tutup presensi harus setelah jam buka pada jadwal ke-" . ($index + 1)
+                ])->withInput();
+            }
+        } catch (\Exception $e) {
+            return back()->withErrors([
+                "jadwals.$index.jam_buka" => "Format jam tidak valid di jadwal ke-" . ($index + 1)
+            ])->withInput();
+        }
+    }
+
+    // Semua validasi lolos, baru simpan satu per satu
+    foreach ($request->jadwals as $jadwal) {
+        // Ambil hanya jam dan menit saja
+        $jamBukaFormatted = \Carbon\Carbon::createFromFormat('H:i', $jadwal['jam_buka'])->format('H:i');
+        $jamTutupFormatted = \Carbon\Carbon::createFromFormat('H:i', $jadwal['jam_tutup'])->format('H:i');
+
+        $newJadwal = jadwal::create([
+            'divisi_id' => $request->divisi_id,
+            'tgl_jadwal' => $jadwal['tgl_jadwal'],
+            'agenda' => $jadwal['agenda'],
+            'jam_buka' => $jamBukaFormatted,
+            'jam_tutup' => $jamTutupFormatted,
         ]);
 
-        $jadwal->volunteers()->sync($request->petugas); 
-        return redirect('jadwal_vlt');
+        if (!empty($jadwal['petugas'])) {
+            $newJadwal->volunteers()->sync($jadwal['petugas']);
+        } elseif ($request->has('petugas')) {
+            $newJadwal->volunteers()->sync($request->petugas);
+        }
+    }
+
+    return redirect('jadwal_vlt')->with('success', 'Jadwal berhasil ditambahkan!');
 }
+
+
+
+
 
 
     public function edit_jadwal($jadwal_id, Request $request){
         $user = Auth::user();
         $jadwal = jadwal::with(['divisi', 'volunteers'])->find($jadwal_id);
         $divisi = divisi::where('divisi_id', $user->divisi_id)->first();
-        $allVolunteers = Volunteer::where('status', 'Aktif')->get();
+        $allVolunteers = volunteer::where('status', 'Aktif')
+    ->where('divisi_id', $user->divisi_id)
+    ->get();
+
         
         $selectedVolunteers = $jadwal->volunteers->pluck('vol_id')->toArray();
         return view('edit_jadwal', compact('jadwal', 'selectedVolunteers', 'divisi', 'user', 'allVolunteers'));
 
     }
 
-    public function updateJadwal(Request $request, $jadwal_id) { 
-            $jadwal = jadwal::find($jadwal_id);
-            $jadwal->update([
-                'divisi_id' => $request->divisi_id,
-                'tgl_jadwal' => $request->tgl_jadwal,
-                'agenda' => $request->agenda,
-                'jam_buka' => $request->jam_buka,
-                'jam_tutup' => $request->jam_tutup,
-            ]);
-        
-            $jadwal->volunteers()->sync($request->petugas); 
-            return redirect('/jadwal_vlt')->with('success', 'Data volunteer berhasil diupdate!'); // Redirect dengan pesan sukses
-        }
+public function updateJadwal(Request $request, $jadwal_id)
+{ 
+    $jadwal = jadwal::find($jadwal_id);
+
+    // Normalisasi dulu
+    $request->merge([
+        'jam_buka' => substr($request->jam_buka, 0, 5),
+        'jam_tutup' => substr($request->jam_tutup, 0, 5),
+    ]);
+
+    // Validasi format H:i
+    $request->validate([
+        'jam_buka' => ['required', 'regex:/^\d{2}:\d{2}$/'],
+        'jam_tutup' => ['required', 'regex:/^\d{2}:\d{2}$/'],
+    ], [
+        'jam_buka.regex' => 'Jam buka harus dalam format HH:MM.',
+        'jam_tutup.regex' => 'Jam tutup harus dalam format HH:MM.',
+    ]);
+
+    // Bandingkan jam
+    $time_buka = \Carbon\Carbon::createFromFormat('H:i', $request->jam_buka);
+    $time_tutup = \Carbon\Carbon::createFromFormat('H:i', $request->jam_tutup);
+
+    if ($time_tutup->lessThanOrEqualTo($time_buka)) {
+        return back()->withErrors([
+            'jam_tutup' => 'Jam tutup harus setelah jam buka.'
+        ])->withInput();
+    }
+
+    $jadwal->update([
+        'divisi_id' => $request->divisi_id,
+        'tgl_jadwal' => $request->tgl_jadwal,
+        'agenda' => $request->agenda,
+        'jam_buka' => $request->jam_buka,
+        'jam_tutup' => $request->jam_tutup,
+    ]);
+
+    $jadwal->volunteers()->sync($request->petugas); 
+
+    return redirect('/jadwal_vlt')->with('success', 'Data jadwal berhasil diupdate!');
+}
+
+
+
 
     public function hapus_jdwl($jadwal_id){
         $jadwal = jadwal::find($jadwal_id);
@@ -264,7 +348,7 @@ public function simpanjadwal(Request $request)
     // Kirim email
     Mail::to($volunteer->email)->send(new ResetPasswordMail($volunteer, $resetLink));
 
-    return redirect()->back()->with('success', 'Email reset password berhasil dikirim.');
+    return redirect()->back()->with('success', 'Email aktivasi akun berhasil dikirim.');
 }
 
 /////////////////// Reset Password Volunteer/////////////////////////
@@ -282,7 +366,7 @@ public function reset_now(Request $request, $token): View
 
 
 
-//Data  Presensi
+/////////////////////////////////////////ATUR PRESENSI/////////////////////////////////
 public function data_presensi() {
     $user = Auth::user(); // Koordinator login
     $filterApplied = false;
@@ -294,7 +378,7 @@ public function data_presensi() {
         $query->where('divisi_id', $user->divisi_id);
     });
 
-    // Jika divisi Creative → filter juga berdasarkan sub divisi (misalnya hanya "Desain")
+    // Jika divisi Creative → filter juga berdasarkan sub divisi 
     if ($user->divisi->nama_divisi === 'Creative') {
         $volunteers = $volunteers->whereHas('subDivisi', function ($query) use ($user) {
             // Diasumsikan nama_subdivisi pada user digunakan sebagai patokan filter
@@ -342,25 +426,30 @@ public function data_presensi() {
     // Ambil ID volunteer dari dropdown (jika dipilih)
 $volunteerId = request()->input('vol_id');
 
-    // Hitung total jam
-    $totalHours = 0;
+$totalHours = 0;
 
 if ($volunteerId) {
     $presensi = presensi::where('vol_id', $volunteerId)->get();
     $filterApplied = true;
 
-    // Hitung total jam kerja hanya jika volunteer dipilih
-    foreach ($presensi as $p) {
-        if ($p->check_in && $p->check_out) {
-            $checkIn = \Carbon\Carbon::parse($p->check_in);
-            $checkOut = \Carbon\Carbon::parse($p->check_out);
-            $durationInHours = floor($checkIn->diffInSeconds($checkOut) / 3600);
-            $totalHours += $durationInHours;
-        }
+foreach ($presensi as $p) {
+    if ($p->check_in && $p->check_out) {
+        $checkIn = Carbon::parse($p->check_in);
+        $checkOut = Carbon::parse($p->check_out);
+
+        $durasiMenit = $checkIn->diffInMinutes($checkOut);
+        $durasiDetik = $checkIn->diffInSeconds($checkOut);
+
+        // Tambahkan ke total jam dengan pembulatan
+        $jamTerdekat = round($durasiMenit / 60);
+        $totalHours += $jamTerdekat;
+
+        // Simpan durasi asli ke dalam objek presensi (akses dari Blade)
+        $p->durasi_asli = gmdate('H:i:s', $durasiDetik);
+        $p->jam_dibulatkan = $jamTerdekat;
     }
 }
-
-
+}
     return view('data_presensi', compact('presensi', 'user', 'totalHours', 'volunteers', 'filterApplied'));
 }
 
@@ -377,8 +466,33 @@ public function filterPresensi(Request $request)
 
     // Jika filter diterapkan
     if ($volunteerId) {
-        $presensi = presensi::where('vol_id', $volunteerId)->get();
+        $presensi = presensi::with('jadwal')->where('vol_id', $volunteerId)->get();
         $filterApplied = true;
+
+       $totalHours = 0;
+
+if ($volunteerId) {
+    $presensi = presensi::where('vol_id', $volunteerId)->get();
+    $filterApplied = true;
+
+  foreach ($presensi as $p) {
+    if ($p->check_in && $p->check_out) {
+        $checkIn = Carbon::parse($p->check_in);
+        $checkOut = Carbon::parse($p->check_out);
+
+        $durasiMenit = $checkIn->diffInMinutes($checkOut);
+        $durasiDetik = $checkIn->diffInSeconds($checkOut);
+
+        // Tambahkan ke total jam dengan pembulatan
+        $jamTerdekat = round($durasiMenit / 60);
+        $totalHours += $jamTerdekat;
+
+        // Simpan durasi asli ke dalam objek presensi (akses dari Blade)
+        $p->durasi_asli = gmdate('H:i:s', $durasiDetik);
+        $p->jam_dibulatkan = $jamTerdekat;
+    }
+}
+}
     }
 
     // Ambil daftar volunteer sesuai divisi user login
@@ -400,22 +514,9 @@ public function filterPresensi(Request $request)
 
     $volunteers = $volunteers->get();
 
-    // Total Jam
-    $totalHours = 0;
-    foreach ($presensi as $p) {
-        if ($p->check_in && $p->check_out) {
-            $checkIn = \Carbon\Carbon::parse($p->check_in);
-            $checkOut = \Carbon\Carbon::parse($p->check_out);
-
-            $durationInSeconds = $checkIn->diffInSeconds($checkOut);
-            $durationInHours = floor($durationInSeconds / 3600);
-
-            $totalHours += $durationInHours;
-        }
-    }
-
-    return view('data_presensi', compact('user', 'presensi', 'volunteers', 'totalHours', 'filterApplied'));
+    return view('data_presensi', compact('user', 'presensi', 'volunteers', 'filterApplied', 'totalHours'));
 }
+
 
 
 
@@ -423,29 +524,28 @@ public function filterPresensi(Request $request)
 
 public function downloadPresensi($vol_id)
 {
-    // Ambil data berdasarkan volunteerId
     $presensi = presensi::where('vol_id', $vol_id)->get();
+    $volunteer = volunteer::findOrFail($vol_id);
 
-     // Ambil data volunteer terkait
-     $volunteer = volunteer::findOrFail($vol_id);
-
-      // Hitung total jam
     $totalHours = 0;
+
     foreach ($presensi as $p) {
         if ($p->check_in && $p->check_out) {
-            $checkIn = \Carbon\Carbon::parse($p->check_in);
-            $checkOut = \Carbon\Carbon::parse($p->check_out);
+            $checkIn = Carbon::parse($p->check_in);
+            $checkOut = Carbon::parse($p->check_out);
 
-            $durationInSeconds = $checkIn->diffInSeconds($checkOut);
-            $durationInHours = floor($durationInSeconds / 3600);
-            $totalHours += $durationInHours;
+            $durasiMenit = $checkIn->diffInMinutes($checkOut);
+            $durasiDetik = $checkIn->diffInSeconds($checkOut);
+
+            $jamTerdekat = round($durasiMenit / 60);
+            $totalHours += $jamTerdekat;
+
+            $p->durasi_asli = gmdate('H:i:s', $durasiDetik);
+            $p->jam_dibulatkan = $jamTerdekat;
         }
     }
 
-    // Proses data dan generate PDF
     $pdf = PDF::loadView('presensi_pdf', compact('presensi', 'volunteer', 'totalHours'));
-
-    // Download PDF
     return $pdf->download('presensi_volunteer.pdf');
 }
 
@@ -453,71 +553,18 @@ public function downloadPresensi($vol_id)
 
 
 
-///////////////////////////////////KOORDINATOR CREATIVE/////////////////////////////////
-public function home_koorcrv(){
-    $user = Auth::user(); 
-    $divisi=divisi::all();
-    
-    $volunteer = volunteer::with('divisi')
-    ->where('divisi_id', $user->divisi_id) // Filter berdasarkan divisi_id user
-    ->get();
-    return view('home_koorcrv', compact( 'volunteer', 'divisi', 'user'));
-}
 
-
-public function tambah_vltcrv(){
-    $user = Auth::user();
-    $divisi = divisi::where('divisi_id', $user->divisi_id)->get();
-    return view('tambah_vltcrv', compact('divisi', 'user'));
-}
-
-
-public function simpanVltcrv(Request $request){
-        volunteer::create([
-            'nama'=> $request->nama,
-            'nim'=> $request->nim,
-            'fakultas'=> $request->fakultas,
-            'jurusan'=> $request->jurusan,
-            'email'=> $request->email,
-            'periode'=> $request->periode,
-            'divisi_id'=> $request->divisi_id,
-            'password'=> bcrypt($request->password)
-        ]);
-        return redirect('/home_koorcrv');         
-}
-
-    public function edit_vltcrv($vol_id, Request $request){
-        $volunteer = volunteer::find($vol_id);
-        return view('edit_vltcrv', compact('volunteer'));
-    }
-
-    public function updateVltcrv(Request $request, $vol_id) { 
-        $volunteer = volunteer::find($vol_id);
-        $volunteer->update([
-            'nama' => $request->nama,
-            'nim' => $request->nim,
-            'fakultas' => $request->fakultas,
-            'jurusan' => $request->jurusan,
-            'periode' => $request->periode,
-        ]);
-    
-        return redirect('/home_koorcrv')->with('success', 'Data volunteer berhasil diupdate!'); // Redirect dengan pesan sukses
-    }
-
-public function hapus_vltcrv($vol_id){
-    $vol = volunteer::find($vol_id);
-    $vol->delete();
-    return redirect('/home_koorcrv');
-}
 
 public function task_mn()
 {
     $user = Auth::user();
 
     // Ambil hanya tugas yang sesuai dengan divisi koordinator yang login
-    $tugas = tugas::with(['volunteers', 'divisi'])
-        ->where('divisi_id', $user->divisi_id)
-        ->get();
+   $tugas = tugas::with(['volunteers', 'divisi'])
+    ->where('divisi_id', $user->divisi_id)
+    ->orderBy('deadline', 'asc') // ← urutkan berdasarkan tanggal deadline
+    ->get();
+
 
     return view('task_mn', compact('tugas', 'user'));
 }
@@ -560,7 +607,7 @@ public function simpan_task(Request $request)
         ]);
 
         $tugas->volunteers()->sync($request->petugas); 
-        return redirect('task_mn');
+        return redirect('task_mn')->with('success', 'Tugas berhasil disimpan!');
 }
 
 public function edit_task($tugas_id, Request $request)
@@ -573,15 +620,23 @@ public function edit_task($tugas_id, Request $request)
     // Ambil divisi user yang sedang login
     $divisi = divisi::where('divisi_id', $user->divisi_id)->first();
     
-    // Ambil semua volunteer yang statusnya 'Aktif' dan sub divisinya 'Desain'
+   // Ambil semua volunteer aktif berdasarkan jabatan
+if ($user->jabatan === 'Koordinator Divisi Creative') {
     $allVolunteers = volunteer::where('status', 'Aktif')
-                               ->whereHas('subDivisi', function ($query) {
-                                   $query->where('nama_subdivisi', 'Desain'); // ✅ diperbaiki
-                               })
-                               ->get();
-    
-    // Ambil ID volunteer yang sudah terkait dengan tugas
-    $selectedVolunteers = $tugas->volunteers->pluck('vol_id')->toArray();
+        ->where('divisi_id', $user->divisi_id)
+        ->whereHas('subDivisi', function ($query) {
+            $query->where('nama_subdivisi', 'Desain');
+        })
+        ->get();
+} elseif ($user->jabatan === 'Koordinator Divisi Konseling') {
+    $allVolunteers = volunteer::where('status', 'Aktif')
+        ->where('divisi_id', $user->divisi_id)
+        ->get();
+} else {
+    $allVolunteers = collect(); // fallback jika jabatan tak sesuai
+}
+
+$selectedVolunteers = $tugas->volunteers->pluck('vol_id')->toArray();
     
     return view('edit_task', compact('tugas', 'selectedVolunteers', 'user', 'allVolunteers', 'divisi'));
 }
@@ -620,7 +675,7 @@ public function updateTask(Request $request, $tugas_id)
 
     $tugas->volunteers()->sync($syncData);
 
-    return redirect('/task_mn')->with('success', 'Tugas dan data volunteer berhasil diperbarui!');
+    return redirect('/task_mn')->with('success', 'Tugas berhasil diperbarui!');
 }
 
 
@@ -662,13 +717,13 @@ public function simpan_sub(Request $request)
             'nama_subdivisi' => $request->nama_subdivisi,
         ]);
 
-        return redirect('sub_divisi');
+        return redirect('sub_divisi')->with('success', 'Data sub divisi berhasil disimpan!');
 }
 
 public function edit_sub($sub_divisi_id) {
     $user = Auth::user();
     $subDiv = SubDivisi::findOrFail($sub_divisi_id);
-    return view('edit_sub', compact('user', 'subDiv'));
+    return view('edit_sub', compact('user', 'subDiv'))->with('success', 'Data sub divisi berhasil diedit!');
 }
 
 public function update_sub(Request $request, $sub_divisi_id)
@@ -700,7 +755,7 @@ public function ajukanPeninjauan($vol_id)
         $volunteer->save();
     }
 
-    return redirect()->back()->with('success', 'Peninjauan status etik telah diajukan.');
+    return redirect()->back()->with('success', 'Status etik volunteer berhasil di ubah menjadi Dalam Peninjauan');
 }
 
 
@@ -713,17 +768,14 @@ public function edit_presensi($presensi_id) {
 
 public function updatePresensi(Request $request, $presensi_id) {
     // Validasi input dari form
-    $request->validate([
-        'check_in' => 'required|date_format:Y-m-d\TH:i',
-        'check_out' => 'required|date_format:Y-m-d\TH:i|after:check_in',
-    ]);
+  $request->validate([
+    'check_in' => 'required|date_format:H:i',
+    'check_out' => 'required|date_format:H:i|after:check_in',
+]);
+
 
     // Ambil data presensi beserta relasi ke jadwal
     $presensi = presensi::with('jadwal')->findOrFail($presensi_id);
-
-    // Konversi input string ke datetime
-    $checkIn = \Carbon\Carbon::parse($request->check_in);
-    $checkOut = \Carbon\Carbon::parse($request->check_out);
 
     // Ambil data jadwal dari relasi
     $jadwal = $presensi->jadwal;
@@ -737,8 +789,12 @@ public function updatePresensi(Request $request, $presensi_id) {
     // Gabungkan tanggal jadwal + jam buka/tutup
     $tanggal = \Carbon\Carbon::parse($jadwal->tgl_jadwal);
 
-    $jamBuka = $tanggal->copy()->setTimeFromTimeString($jadwal->jam_buka);   // ex: 08:00:00
-    $jamTutup = $tanggal->copy()->setTimeFromTimeString($jadwal->jam_tutup); // ex: 17:00:00
+   // ⬇ Gabungkan tanggal + jam input
+    $checkIn = $tanggal->copy()->setTimeFromTimeString($request->check_in);
+    $checkOut = $tanggal->copy()->setTimeFromTimeString($request->check_out);
+
+    $jamBuka = $tanggal->copy()->setTimeFromTimeString($jadwal->jam_buka);
+    $jamTutup = $tanggal->copy()->setTimeFromTimeString($jadwal->jam_tutup);
 
     // Validasi waktu terhadap jadwal
     if ($checkIn->lt($jamBuka)) {
@@ -753,10 +809,21 @@ public function updatePresensi(Request $request, $presensi_id) {
         ])->withInput();
     }
 
+    // Hitung durasi presensi
+$durasiBaruDetik = $checkOut->diffInSeconds($checkIn);
+$durasiMenit = $durasiBaruDetik / 60;
+
+// Pembulatan total jam
+$totalJam = floor($durasiMenit / 60);
+if (($durasiMenit % 60) >= 30) {
+    $totalJam += 1;
+}
+
     // Simpan jika valid
     $presensi->update([
         'check_in' => $checkIn,
         'check_out' => $checkOut,
+        'total_jam' => $totalJam
     ]);
 
     return redirect('/data_presensi')->with('success', 'Jam presensi berhasil diperbarui!');
@@ -786,6 +853,13 @@ public function validasi_task(Request $request)
                 return $tugas->volunteers->isNotEmpty(); // ⬅️ ini ganti arrow function
             });
     }
+
+     // Tambahkan tanggal yang sudah diformat ke setiap tugas
+$tugasFiltered->each(function ($task) {
+    $task->deadline = \Carbon\Carbon::parse($task->deadline)->format('d-m-Y');
+});
+
+    
 
     return view('validasi_task', compact('user', 'desk_tgs', 'tugasFiltered', 'filterApplied'));
 }

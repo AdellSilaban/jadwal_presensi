@@ -26,4 +26,10 @@ class divisi extends Model
     {
         return $this->hasMany(SubDivisi::class, 'divisi_id');
     }
+
+    public function desk_div()
+{
+    return $this->hasMany(desk_div::class, 'divisi_id');
+}
+
 }

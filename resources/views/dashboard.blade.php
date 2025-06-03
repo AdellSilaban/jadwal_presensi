@@ -42,43 +42,88 @@
     <div class="container-fluid">
         <h1 class="h4 mb-1 text-gray-800">Dashboard Volunteer</h1>
         <br>
+<div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-5 g-3 mb-4">
 
-     <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-5 g-3 mb-4">
+    {{-- Total Volunteer --}}
     <div class="col">
-        <div class="card border-0 shadow-sm h-100 rounded-4 px-3 py-2">
-            <div class="text-muted small">Total Volunteer</div>
+        <div class="card border-0 shadow-sm h-100 rounded-4 px-3 py-3">
+            <div class="text-muted small mb-1">Total Volunteer</div>
             <div class="fs-4 fw-bold">{{ $total_volunteer }}</div>
         </div>
     </div>
 
+    {{-- Volunteer Aktif --}}
     <div class="col">
-        <div class="card border-0 shadow-sm h-100 rounded-4 px-3 py-2">
-            <div class="text-muted small">Volunteer Aktif</div>
+        <div class="card border-0 shadow-sm h-100 rounded-4 px-3 py-3">
+            <div class="text-muted small mb-1">Volunteer Aktif</div>
             <div class="fs-4 fw-bold">{{ $vol_aktif }}</div>
         </div>
     </div>
 
+    {{-- Volunteer Tidak Aktif --}}
     <div class="col">
-        <div class="card border-0 shadow-sm h-100 rounded-4 px-3 py-2">
-            <div class="text-muted small">Volunteer Tidak Aktif</div>
+        <div class="card border-0 shadow-sm h-100 rounded-4 px-3 py-3">
+            <div class="text-muted small mb-1">Volunteer Tidak Aktif</div>
             <div class="fs-4 fw-bold">{{ $vol_tidak_aktif }}</div>
         </div>
     </div>
 
+    {{-- Total Jam Presensi --}}
     <div class="col">
-        <div class="card border-0 shadow-sm h-100 rounded-4 px-3 py-2">
+        <div class="card border-0 shadow-sm h-100 rounded-4 px-3 py-3">
+            <form method="GET" action="{{ route('dashboard') }}" class="mb-2">
+                <div class="d-flex justify-content-between align-items-center gap-1">
+                    <select name="bulan_presensi" class="form-select form-select-sm" style="width: 70px;">
+                        <option value="">Bln</option>
+                        @for ($i = 1; $i <= 12; $i++)
+                            <option value="{{ $i }}" {{ request('bulan_presensi') == $i ? 'selected' : '' }}>
+                                {{ \Carbon\Carbon::create()->month($i)->translatedFormat('M') }}
+                            </option>
+                        @endfor
+                    </select>
+                    <select name="tahun_presensi" class="form-select form-select-sm" style="width: 80px;">
+                        <option value="">Thn</option>
+                        @for ($y = now()->year; $y >= 2020; $y--)
+                            <option value="{{ $y }}" {{ request('tahun_presensi') == $y ? 'selected' : '' }}>{{ $y }}</option>
+                        @endfor
+                    </select>
+                    <button type="submit" class="btn btn-sm btn-outline-primary">OK</button>
+                </div>
+            </form>
             <div class="text-muted small">Total Jam Presensi</div>
             <div class="fs-4 fw-bold">{{ $total_jam_presensi }} jam</div>
         </div>
     </div>
 
+    {{-- Tugas Selesai --}}
     <div class="col">
-        <div class="card border-0 shadow-sm h-100 rounded-4 px-3 py-2">
+        <div class="card border-0 shadow-sm h-100 rounded-4 px-3 py-3">
+            <form method="GET" action="{{ route('dashboard') }}" class="mb-2">
+                <div class="d-flex justify-content-between align-items-center gap-1">
+                    <select name="bulan_tugas" class="form-select form-select-sm" style="width: 70px;">
+                        <option value="">Bln</option>
+                        @for ($i = 1; $i <= 12; $i++)
+                            <option value="{{ $i }}" {{ request('bulan_tugas') == $i ? 'selected' : '' }}>
+                                {{ \Carbon\Carbon::create()->month($i)->translatedFormat('M') }}
+                            </option>
+                        @endfor
+                    </select>
+                    <select name="tahun_tugas" class="form-select form-select-sm" style="width: 80px;">
+                        <option value="">Thn</option>
+                        @for ($y = now()->year; $y >= 2020; $y--)
+                            <option value="{{ $y }}" {{ request('tahun_tugas') == $y ? 'selected' : '' }}>{{ $y }}</option>
+                        @endfor
+                    </select>
+                    <button type="submit" class="btn btn-sm btn-outline-primary">OK</button>
+                </div>
+            </form>
             <div class="text-muted small">Tugas Selesai</div>
             <div class="fs-4 fw-bold">{{ $total_tugas_selesai }}</div>
         </div>
     </div>
+
 </div>
+
 
 <div class="row mb-4">
     <div class="col-12">

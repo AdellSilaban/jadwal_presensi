@@ -54,13 +54,16 @@
 
                     <div id="poin-container">
                         <label class="form-label">Deskripsi Divisi (per poin):</label>
-                    
-                        @foreach (explode("\n", $divisi->desk_divisi) as $poin)
-                            <div class="input-group mb-2">
-                                <span class="input-group-text">•</span>
-                                <input type="text" name="desk_divisi[]" class="form-control" value="{{ ltrim($poin, '• ') }}">
-                            </div>
-                        @endforeach
+              @foreach ($divisi->desk_div as $desk)
+    <div class="input-group mb-2">
+        <span class="input-group-text">•</span>
+        <input type="text" name="deskripsi[]" class="form-control" value="{{ $desk->deskripsi }}">
+        <input type="hidden" name="deskripsi_id[]" value="{{ $desk->deskripsi_id }}">
+    </div>
+@endforeach
+
+
+
                     </div>
                     
                     <button type="button" class="btn btn-sm btn-outline-primary mb-3" onclick="tambahPoin()">+ Tambah Poin</button>
@@ -78,16 +81,18 @@
 </div>
 
 <script>
-    function tambahPoin() {
-        const container = document.getElementById('poin-container');
-        const inputGroup = document.createElement('div');
-        inputGroup.className = 'input-group mb-2';
-        inputGroup.innerHTML = `
-            <span class="input-group-text">•</span>
-            <input type="text" name="desk_divisi[]" class="form-control" placeholder="Tulis poin...">
-        `;
-        container.appendChild(inputGroup);
-    }
+function tambahPoin() {
+    const container = document.getElementById('poin-container');
+    const inputGroup = document.createElement('div');
+    inputGroup.className = 'input-group mb-2';
+    inputGroup.innerHTML = `
+        <span class="input-group-text">•</span>
+        <input type="text" name="deskripsi[]" class="form-control" placeholder="Tulis poin...">
+        <input type="hidden" name="deskripsi_id[]" value="">
+    `;
+    container.appendChild(inputGroup);
+}
+
 </script>
 
 @endsection

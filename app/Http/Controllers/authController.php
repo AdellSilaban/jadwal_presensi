@@ -113,51 +113,111 @@ class authController extends Controller
 //     return back()->with('error', 'Email atau password salah.');
 // }
 
-public function ceklogin(Request $request)
-{
-    $request->validate([
-        'email' => 'required|email',
-        'password' => 'required',
-    ]);
+// public function ceklogin(Request $request)
+// {
+//     $request->validate([
+//         'email' => 'required|email',
+//         'password' => 'required',
+//     ]);
 
-    $user = User::where('email', $request->email)->first();
+//     $user = User::where('email', $request->email)->first();
 
-    if (!$user || $user->status !== 'Aktif') {
-        return back()->with('error', 'Akun tidak aktif atau tidak ditemukan.');
-    }
+//     if (!$user || $user->status !== 'Aktif') {
+//         return back()->with('error', 'Akun tidak aktif atau tidak ditemukan.');
+//     }
 
-    $credentials = $request->only('email', 'password');
+//     $credentials = $request->only('email', 'password');
 
-    if (Auth::attempt($credentials)) {
-        $user = Auth::user();
-        Log::info('LOGIN BERHASIL', ['jabatan' => $user->jabatan]);
+//     if (Auth::attempt($credentials)) {
+//         $user = Auth::user();
+//         Log::info('LOGIN BERHASIL', ['jabatan' => $user->jabatan, 'user_id' => $user->user_id]);
 
-        if ($user->jabatan === 'Kepala LPKKSK') {
-            return redirect('/home_kepalaPKK');
+//         // Tambahkan pengecekan session
+//         if (Auth::check()) {
+//             Log::info('SESSION AKTIF setelah login');
+//         } else {
+//             Log::warning('SESSION HILANG setelah login');
+//         }
+
+//         if ($user->jabatan === 'Kepala LPKKSK') {
+//             return redirect('/dashboard');
+//         }
+
+//         if (in_array($user->jabatan, [
+//             'Koordinator Divisi Creative',
+//             'Koordinator Divisi Tim Ibadah Kampus',
+//             'Koordinator Divisi Konseling'
+//         ])) {
+//             return redirect('/home_koor');
+//         }
+
+//         Auth::logout();
+//         return back()->with('error', 'Jabatan tidak dikenali.');
+//     }
+
+//     return back()->with('error', 'Email atau password salah.');
+// }
+
+    public function ceklogin(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'password' => 'required',
+        ]);
+
+        $user = User::where('email', $request->email)->first();
+
+        if (!$user || $user->status !== 'Aktif') {
+            Log::warning('LOGIN GAGAL - Akun tidak aktif atau tidak ditemukan', ['email' => $request->email]);
+            return back()->with('error', 'Akun tidak aktif atau tidak ditemukan.');
         }
 
-        if (in_array($user->jabatan, [
-            'Koordinator Divisi Creative',
-            'Koordinator Divisi Tim Ibadah Kampus',
-            'Koordinator Divisi Konseling'
-        ])) {
-            return redirect('/home_koor');
+        $credentials = $request->only('email', 'password');
+
+        if (Auth::attempt($credentials)) {
+            $request->session()->regenerate();
+            $user = Auth::user();
+
+            Log::info('LOGIN BERHASIL', [
+                'user_id' => $user->user_id,
+                'jabatan' => $user->jabatan
+            ]);
+
+            switch ($user->jabatan) {
+                case 'Kepala LPKKSK':
+                    return redirect('/dashboard'); // ✅ typo diperbaiki
+
+                case 'Koordinator Divisi Creative':
+                case 'Koordinator Divisi Tim Ibadah Kampus':
+                case 'Koordinator Divisi Konseling':
+                    return redirect('/home_koor');
+
+                default:
+                    Auth::logout();
+                    return back()->with('error', 'Jabatan tidak dikenali.');
+            }
         }
 
-        Auth::logout();
-        return back()->with('error', 'Jabatan tidak dikenali.');
+        return back()->with('error', 'Email atau password salah.');
     }
 
-    return back()->with('error', 'Email atau password salah.');
-}
+
+
+
 
 
      
 
-     public function logout(){
-        Auth::logout();
-        return redirect('/login');
-    }
+     public function logout(Request $request)
+{
+    Auth::logout();
+
+    $request->session()->invalidate();
+    $request->session()->regenerateToken();
+
+    return redirect('/login');
+}
+
 
     public function ubah_pass()
 {

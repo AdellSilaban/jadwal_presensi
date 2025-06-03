@@ -1333,6 +1333,7 @@ h6 {
     background-color: #fff;
     border-top: 1px solid #eaeaea;
     font-size: 14px;
+     margin-top: auto;
   }
   
   .footer-volunteer {
@@ -1357,4 +1358,9 @@ h6 {
   text-align: center;
   font-size: 13px;
   color: #012970;
+}
+
+.card .form-select,
+.card .btn {
+    font-size: 0.85rem;
 }

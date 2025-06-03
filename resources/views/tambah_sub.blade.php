@@ -104,6 +104,7 @@
         </div>
     </div>
 </div>
+
 @endsection
 
 
@@ -150,4 +151,17 @@
 
     </ul>
   </nav><!-- End Icons Navigation -->
+  <!-- SweetAlert2 -->
 @endsection
+@if (session('success'))
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        Swal.fire({
+            icon: 'success',
+            title: 'Berhasil',
+            text: '{{ session('success') }}',
+            confirmButtonText: 'Oke'
+        });
+    });
+</script>
+@endif

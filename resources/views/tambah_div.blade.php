@@ -55,7 +55,7 @@
                     
                         <div class="input-group mb-2">
                             <span class="input-group-text">•</span>
-                            <input type="text" name="desk_divisi[]" class="form-control" placeholder="Tulis poin...">
+                            <input type="text" name="deskripsi[]" class="form-control" placeholder="Tulis poin...">
                         </div>
                     </div>
                     
@@ -80,7 +80,7 @@
         inputGroup.className = 'input-group mb-2';
         inputGroup.innerHTML = `
             <span class="input-group-text">•</span>
-            <input type="text" name="desk_divisi[]" class="form-control" placeholder="Tulis poin...">
+            <input type="text" name="deskripsi[]" class="form-control" placeholder="Tulis poin...">
         `;
         container.appendChild(inputGroup);
     }

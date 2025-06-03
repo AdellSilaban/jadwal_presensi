@@ -46,7 +46,7 @@
         <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
             <!-- Search Input -->
             <div class="flex-grow-1 me-3">
-                <input type="text" class="form-control shadow-sm" style="max-width: 260px; border-radius: 0.65rem; padding: 0.4rem 0.9rem; font-size: 0.9rem;" placeholder="Cari Nama, NIM, atau Email..." id="searchInput" onkeyup="cariData()" />
+                <input type="text" class="form-control shadow-sm" style="max-width: 260px; border-radius: 0.65rem; padding: 0.4rem 0.9rem; font-size: 0.9rem;" placeholder="Cari jurusan,divisi,status, atau status etik..." id="searchInput" onkeyup="cariData()" />
             </div>
 
             <!-- Tombol aksi -->
@@ -89,7 +89,7 @@
                             <td class="text-center align-middle text-nowrap">{{ $vol->email }}</td>
                             <td class="text-center align-middle text-nowrap">
                                 {{ $vol->mulai }} - {{ $vol->akhir }}<br>
-                                ({{ $vol->total_hari }} hari)
+                                ({{ $vol->total_bulan }} bulan)
                             </td>
                             <td class="text-center align-middle text-nowrap">{{ $vol->divisi ? $vol->divisi->nama_divisi : '-' }}</td>
                             <td class="text-center align-middle text-nowrap">{{ $vol->subDivisi->nama_subdivisi ?? '-' }}</td>
@@ -200,25 +200,29 @@
         const input = document.getElementById("searchInput");
         const filter = input.value.toUpperCase();
         const table = document.querySelector(".table");
-        const tbody = table.getElementsByTagName("tbody")[0];
-        const rows = tbody.getElementsByTagName("tr");
+        const tbody = table.querySelector("tbody");
+        const rows = tbody.querySelectorAll("tr");
 
-        for (let i = 0; i < rows.length; i++) {
-            const cells = rows[i].getElementsByTagName("td");
-            if (cells.length >= 5) {
-                const nama = cells[0].textContent.toUpperCase();
-                const nim = cells[1].textContent.toUpperCase();
-                const email = cells[4].textContent.toUpperCase();
+        rows.forEach(row => {
+            const cells = row.querySelectorAll("td");
+            if (cells.length >= 11) {
+                const jurusan = cells[3].textContent.toUpperCase();
+                const divisi = cells[6].textContent.toUpperCase();
+                const status = cells[8].textContent.toUpperCase();
+                const status_etik = cells[9].textContent.toUpperCase();
 
-                if (nama.includes(filter) || nim.includes(filter) || email.includes(filter)) {
-                    rows[i].style.display = "";
-                } else {
-                    rows[i].style.display = "none";
-                }
+                const cocok = jurusan.includes(filter) ||
+                              divisi.includes(filter) ||
+                              status.includes(filter) ||
+                              status_etik.includes(filter);
+
+                row.style.display = cocok ? "" : "none";
             }
-        }
+        });
     }
 </script>
+
+
 
 <script>
     function konfirmasiPindah(vol_id) {
